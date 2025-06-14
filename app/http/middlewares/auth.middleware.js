@@ -2,7 +2,7 @@ const cookieParser = require("cookie-parser");
 const createHttpError = require("http-errors");
 const JWT = require("jsonwebtoken");
 const axios = require("axios");
-const { UserModel } = require("../../models/user");
+const { PrivateUserModel } = require("../../models/user/privateuser");
 async function isAuthWithCookie(req, res, next) {
   try {
     const userToken = req.signedCookies["userToken"];
@@ -16,7 +16,7 @@ async function isAuthWithCookie(req, res, next) {
     JWT.verify(token, process.env.TOKEN_SECRET_KEY, async (err, payload) => {
       if (err) throw createHttpError.Unauthorized("توکن نامعتبر است");
       const { _id } = payload;
-      const user = await UserModel.findById(_id, {
+      const user = await PrivateUserModel.findById(_id, {
         password: 0,
         resetLink: 0,
       });
@@ -46,7 +46,7 @@ async function verifyAccessToken(req, res, next) {
         try {
           if (err) throw createHttpError.Unauthorized("توکن نامعتبر است");
           const { _id } = payload;
-          const user = await UserModel.findById(_id, {
+          const user = await PrivateUserModel.findById(_id, {
             password: 0,
             otp: 0,
           });

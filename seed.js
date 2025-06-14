@@ -1,22 +1,26 @@
-const users = require("./data/db.users.json");
-const posts = require("./data/db.posts.json");
-const categories = require("./data/db.category.json");
-const comments = require("./data/db.comments.json");
-const { UserModel } = require("./app/models/user");
-const { PostModel } = require("./app/models/post");
-const { CommentModel } = require("./app/models/comment");
-const { CategoryModel } = require("./app/models/category");
+require("dotenv").config();
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false); // or true to suppress deprecation
+const HostData = require("./data/db.host.json")
+// const GuestData = require("./data/db.guest.json");
+// const PvUser=require("./data/db.users.json");
 const Application = require("./app/server");
+const { HostModel } = require("./app/models/host");
+
+// const { GuestModel } = require("./app/models/guest");
+// const {PrivateUserModel}=require("./app/models/user/privateuser");
 
 (async () => {
   new Application();
-  await UserModel.insertMany(users);
-  await PostModel.insertMany(posts);
-  await CommentModel.insertMany(comments);
-  await CategoryModel.insertMany(categories);
+  /*  await EskanModel.insertMany(eskanData);
+   await MizbanModel.insertMany(mizbanData); */
+  // await GuestModel.insertMany(GuestData);
+  // await PrivateUserModel.insertMany(PvUser)
+  await HostModel.insertMany(HostData);
 })()
   .then(() => {
     console.log("DATA INSERTED SUCCESSFULLY.");
     console.log("NOW RUN npm run dev AND TEST THE APIs");
   })
   .catch((err) => console.log("DATA INSERTION FAILED: ", err));
+

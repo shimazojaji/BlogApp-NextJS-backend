@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const emailValidator = require("email-validator");
 const JWT = require("jsonwebtoken");
-const { UserModel } = require("../models/user");
+const { PrivateUserModel } = require("../models/user/privateuser");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 const { intervalToDuration } = require("date-fns");
@@ -103,7 +103,7 @@ function VerifyRefreshToken(req) {
           if (err)
             reject(createError.Unauthorized("لطفا حساب کاربری خود شوید"));
           const { _id } = payload;
-          const user = await UserModel.findById(_id, {
+          const user = await PrivateUserModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,
