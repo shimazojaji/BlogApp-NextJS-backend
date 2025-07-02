@@ -3,10 +3,10 @@ const createHttpError = require("http-errors");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const { GuestModel } = require("../../models/guest");
 const { addGuestSchema } = require("../validators/guest/guest.schema");
+const { default: mongoose } = require("mongoose");
 
-  /**
- * List (guest) entries 
- */
+  //List (guest) entries 
+
 const getListOfGuests = async (req, res, next) => {
   try {
     const query = req.query;
@@ -45,8 +45,60 @@ const addNewGuest = async (req, res, next) => {
   }
 };
 
+const removeGuest = async(req,res)=>{
+ 
+    const { id } = req.params;
+    await findGuestById(id);
+    const guest = await GuestModel.findByIdAndDelete(id);
+    if (!guest._id) throw createHttpError.InternalServerError(" پست حذف نشد");
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "پست با موفقیت حذف شد",
+      },
+    });
 
+  }
+  const findGuestById= async(id) =>{
+    if (!mongoose.isValidObjectId(id))
+      throw createHttpError.BadRequest("شناسه پست نامعتبر است");
+  }
+
+  const updateGuest= async (req, res) =>{
+    const { id } = req.params;
+    const { namefamily, mobile, ...rest } = req.body;
+
+    const guest = await this.findGuestById(id);
+    const data = copyObject(rest);
+   
+
+
+  
+
+    const updateGuestResult = await GuestModel.updateOne(
+      { _id: id },
+      
+    );
+
+    if (!updateGuestResult.modifiedCount)
+      throw new createHttpError.InternalServerError(
+        "به روزرسانی پست انجام نشد"
+      );
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روزرسانی زائر با موفقیت انجام شد",
+      },
+    });
+  }
+
+  const  getGuestById=async(req, res) =>{
+    const { id } = req.params;
+    const guest = await findGuestById(id);
+    
+  }
 module.exports = {
   addNewGuest,
-  getListOfGuests,
+  getListOfGuests,removeGuest,updateGuest,getGuestById
 };

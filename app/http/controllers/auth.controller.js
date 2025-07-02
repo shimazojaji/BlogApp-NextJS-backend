@@ -60,10 +60,8 @@ class UserAuthController extends Controller {
 
     const { mobile, role } = req.body;
 
-    console.log( mobile, role)
 
     const user = await this.findUserByRole(mobile,role);
-console.log(user)
     if (!user) {
       throw createError.BadRequest(" کاربری با این موبایل پیدا نشد  ");
     }
@@ -134,7 +132,17 @@ async findUserByRole(mobile, role) {
       auth: false,
     });
   }
+ async getUserProfilePv(req, res) {
+    const { _id: userId } = req.user;
+    const user = await PrivateUserModel.findById(userId, { otp: 0 });
 
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        user,
+      },
+    });
+  }
   async getAllUsers(req, res) {
     const users = await PrivateUserModel.find();
 

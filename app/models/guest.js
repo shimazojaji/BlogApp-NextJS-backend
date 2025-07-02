@@ -8,6 +8,7 @@ const GuestSchema = new mongoose.Schema({
   childNo: { type: Number, required: true },
   city: { type: String, required: true },
   startDate: { type: String, required: true },
+  status: { type: String, default:"در حال بررسی"},
 
 }, {
   timestamps: true,

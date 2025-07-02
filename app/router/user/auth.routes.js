@@ -14,9 +14,9 @@ router.get(
 
 
 router.get(
-  "/profile",
+  "/profilePv",
   verifyAccessToken,
-  expressAsyncHandler(UserAuthController.getUserProfile)
+  expressAsyncHandler(UserAuthController.getUserProfilePv)
 );
 router.get(
   "/list",
@@ -25,5 +25,5 @@ router.get(
 );
 router.post("/logout", expressAsyncHandler(UserAuthController.logout));
 
-module.exports =  router
+module.exports = router
 
