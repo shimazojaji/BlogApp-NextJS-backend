@@ -6,6 +6,7 @@ const ServerToguestSchema = new mongoose.Schema({
     serverSkill: { type: String, required: true },
     serverFavorite: { type: String, required: true },
     serverTime: { type: String, required: true },
+  userRole: { type: String, default: "USER" }
 
 
 }, {

@@ -7,43 +7,17 @@ const { addGuestSchema } = require("../../http/validators/guest/guest.schema");
 const { GuestModel } = require("../../models/guest");
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { removeGuest, updateGuest, getGuestById } = require("../../http/controllers/guest.controller");
+const { removeGuest, updateGuest, getGuestById, getAllGuest, addNewGuest } = require("../../http/controllers/guest.controller");
 
 
 // POST /guest/add - Create new entry
-router.post("/add", async (req, res, next) => {
-  try {
-    await addGuestSchema.validateAsync(req.body);
-
-    const { mobile } = req.body;
-
-    const exists = await GuestModel.findOne({ mobile });
-    if (exists) throw createHttpError.Conflict("شماره موبایل قبلا ثبت شده است");
-    const guest = await GuestModel.create(req.body);
-
-
-
-    res.status(HttpStatus.CREATED).json({
-      statusCode: HttpStatus.CREATED,
-      message: "ثبت اطلاعات با موفقیت انجام شد",
-      data: guest,
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.post("/add", router.post("/add",verifyAccessToken, expressAsyncHandler(addNewGuest)));
 
 
 
 // GET /guest/list - List all entries
-router.get("/list", async (req, res, next) => {
-  try {
-    const all = await GuestModel.find().sort({ createdAt: -1 });
-    res.json({ data: all });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/list", router.post("/add",verifyAccessToken, expressAsyncHandler(getAllGuest))
+);
 
 // Remove, update, get by ID
 router.delete("/remove/:id", verifyAccessToken, expressAsyncHandler(removeGuest));

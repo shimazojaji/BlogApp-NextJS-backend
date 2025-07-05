@@ -5,7 +5,8 @@ const router = require("express").Router();
 router.post("/get-otp", expressAsyncHandler(UserAuthController.getOtp));
 router.post("/send-otp", expressAsyncHandler(UserAuthController.sendOtp));
 
-// router.post("/signinpv", expressAsyncHandler(UserAuthController.signinPrivateUser));
+ router.post("/adminlogin", expressAsyncHandler(UserAuthController.AdminLogin));
+
 
 router.post("/signinpb", expressAsyncHandler(UserAuthController.signinPublicUser));
 router.post("/login", expressAsyncHandler(UserAuthController.login));
@@ -25,6 +26,12 @@ router.get(
   "/profileGuest",
   verifyAccessToken,
   expressAsyncHandler(UserAuthController.getProfileGuest)
+);
+
+router.get(
+  "/profileAdmin",
+  verifyAccessToken,
+  expressAsyncHandler(UserAuthController.getProfileAdmin)
 );
 router.get(
   "/list",

@@ -1,12 +1,10 @@
 [
   {
-    "_id": "76a0e4b88dfc01025fc0550d",
-    "username": "test",
-    "password": "$2a$10$YFsm1kazdm8h6SCvvr4JRONHc5oSWOW0b2CmaWZefbC6PGGMuBRnC",
    
-    "createdAt": "2024-07-24T11:25:44.446Z",
-    "updatedAt": "2024-08-10T07:57:13.689Z",
-    "__v": 0
+    "username": "admin",
+    "password": "admin1404@",
+    "userRole":"ADMIN"
+   
    
   }
 

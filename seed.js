@@ -1,11 +1,12 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false); // or true to suppress deprecation
-const HostData = require("./data/db.host.json")
+const AdminData = require("./data/db.users.json")
 // const GuestData = require("./data/db.guest.json");
 // const PvUser=require("./data/db.users.json");
 const Application = require("./app/server");
-const { HostModel } = require("./app/models/host");
+const { AdminModel } = require("./app/models/user/admin");
+const { createAdmin } = require("./hash");
 
 
 
@@ -15,7 +16,7 @@ const { HostModel } = require("./app/models/host");
    await MizbanModel.insertMany(mizbanData); */
   // await GuestModel.insertMany(GuestData);
   // await PrivateUserModel.insertMany(PvUser)
-  await HostModel.insertMany(HostData);
+  await createAdmin()
 })()
   .then(() => {
     console.log("DATA INSERTED SUCCESSFULLY.");

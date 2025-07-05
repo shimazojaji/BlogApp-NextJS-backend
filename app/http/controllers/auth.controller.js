@@ -20,6 +20,8 @@ const CODE_EXPIRES = 90 * 1000; //90 seconds in miliseconds
 const Kavenegar = require("kavenegar");
 const { GuestModel } = require("../../models/guest");
 const { OperatorModel } = require("../../models/user/operator");
+const { validateAdminLoginSchema } = require("../validators/user/admin.schema");
+const { AdminModel } = require("../../models/user/admin");
 
 class UserAuthController extends Controller {
   constructor() {
@@ -135,39 +137,51 @@ class UserAuthController extends Controller {
      );
    } */
 
- /*  async signinPrivateUser(req, res) {
-    await validateSigninPrivateUserSchema(req.body);
+
+// ===============
+// Admin
+// ===============
+  async AdminLogin(req, res) {
+    await validateAdminLoginSchema(req.body);
 
     const { username, password } = req.body;
 
-    // checking if the user is already in the data base :
+    // checking if the admin is already in the data base :
 
-    const user = await this.checkUserExist(username.toLowerCase());
+    const admin = await this.checkAdminExist(username.toLowerCase());
 
-    if (!user) {
+    if (!admin) {
       throw createError.BadRequest("نام کاربری  اشتباه است");
     }
 
 
     // PASSWORD IS CORRECT :
-    const validPass = await bcrypt.compare(password, user.password);
+    const validPass = await bcrypt.compare(password, admin.password);
 
     if (!validPass)
       throw createError.BadRequest("رمز عبور اشتباه است");
 
-    await setAccessToken(res, user);
-    await setRefreshToken(res, user);
+    await setAccessToken(res, admin);
+    await setRefreshToken(res, admin);
     let WELLCOME_MESSAGE = `ورود با موفقیت انجام شد`;
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
         message: WELLCOME_MESSAGE,
-        user,
+        admin,
       },
     });
   }
- */
+ 
+ 
+  async checkAdminExist(username) {
+    const admin = await AdminModel.findOne({ username });
+    return admin;
+  }
+
+
+ 
   async signinPublicUser(req, res) {
     await validateSigninPublicUserSchema(req.body);
 
@@ -298,7 +312,7 @@ class UserAuthController extends Controller {
     const guest = await GuestModel.findById(_id); // or GuestModel.findOne({ mobile })
 
     if (!guest) {
-      throw createError.NotFound("مهمان پیدا نشد");
+      throw createError.NotFound("زائر پیدا نشد");
     }
 
     return res.status(HttpStatus.OK).json({
@@ -307,6 +321,19 @@ class UserAuthController extends Controller {
     });
   }
 
+ async getProfileAdmin(req, res) {
+    const { _id } = req.user; // Instead of mobile from query (more secure)
+    const admin = await AdminModel.findById(_id); // or GuestModel.findOne({ mobile })
+console.log(admin)
+    if (!admin) {
+      throw createError.NotFound("ادمین پیدا نشد");
+    }
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: { admin },
+    });
+  }
 
 
 

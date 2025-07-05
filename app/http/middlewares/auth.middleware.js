@@ -4,6 +4,7 @@ const JWT = require("jsonwebtoken");
 const axios = require("axios");
 const { GuestModel } = require("../../models/guest");
 const { OperatorModel } = require("../../models/user/operator");
+const { AdminModel } = require("../../models/user/admin");
 async function isAuthWithCookie(req, res, next) {
   try {
     const userToken = req.signedCookies["userToken"];
@@ -48,7 +49,7 @@ async function verifyAccessToken(req, res, next) {
           if (err) throw createHttpError.Unauthorized("توکن نامعتبر است");
           const { _id } = payload;
           const user = (await OperatorModel.findById(_id, { password: 0, otp: 0 })) ||
-            (await GuestModel.findById(_id, { otp: 0 }));
+            (await GuestModel.findById(_id, { otp: 0 })) || (await AdminModel.findById(_id, { password: 0, otp: 0 }));
           if (!user) throw createHttpError.Unauthorized("حساب کاربری یافت نشد");
           req.user = user;
           return next();

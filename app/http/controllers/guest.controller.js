@@ -3,8 +3,7 @@ const { StatusCodes: HttpStatus } = require("http-status-codes");
 const { GuestModel } = require("../../models/guest");
 const { addGuestSchema } = require("../validators/guest/guest.schema");
 const mongoose = require("mongoose");
-const Kavenegar = require("kavenegar");
-const CODE_EXPIRES = 90 * 1000; // 90 seconds
+
 
 // Get list of guests
 const getListOfGuests = async (req, res, next) => {
@@ -125,11 +124,21 @@ const getGuestById = async (req, res, next) => {
     next(err);
   }
 };
+// 
+const getAllGuest= async (req, res, next) => {
+  try {
+    const all = await GuestModel.find().sort({ createdAt: -1 });
+    res.json({ data: all });
+  } catch (err) {
+    next(err);
+  }
+}
 
 // Exports
 module.exports = {
   addNewGuest,
   getListOfGuests,
+  getAllGuest,
   removeGuest,
   updateGuest,
   getGuestById,

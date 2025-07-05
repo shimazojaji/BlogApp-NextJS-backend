@@ -16,7 +16,8 @@ const GuestSchema = new mongoose.Schema({
   isNeedSpecialServices: { type: Boolean, default: false },
   isNeedShower: { type: Boolean, default: false },
   isServiced: { type: Boolean, default: false },
-statusChangedAt: { type: Date },
+  statusChangedAt: { type: Date },
+  userRole: { type: String, default: "USER" }
 }, {
   timestamps: true,
 });
