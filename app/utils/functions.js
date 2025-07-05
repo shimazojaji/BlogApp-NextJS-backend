@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 const emailValidator = require("email-validator");
 const JWT = require("jsonwebtoken");
-const { PrivateUserModel } = require("../models/user/privateuser");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 const { intervalToDuration } = require("date-fns");
+const { GuestModel } = require("../models/guest");
+const { HostModel } = require("../models/host");
+const { ServerToguestModel } = require("../models/serverToguest");
+const { OperatorModel } = require("../models/user/operator");
 
 function deleteInvalidPropertyInObject(data = {}, blackListFields = []) {
   // let nullishData = ["", " ", "0", 0, null, undefined];
@@ -103,11 +106,23 @@ function VerifyRefreshToken(req) {
           if (err)
             reject(createError.Unauthorized("لطفا حساب کاربری خود شوید"));
           const { _id } = payload;
-          const user = await PrivateUserModel.findById(_id, {
+          const user =( await OperatorModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,
-          });
+          }))|| ( await GuestModel.findById(_id, {
+            password: 0,
+            otp: 0,
+            resetLink: 0,
+          })) || ( await HostModel.findById(_id, {
+            password: 0,
+            otp: 0,
+            resetLink: 0,
+          }))|| ( await ServerToguestModel.findById(_id, {
+            password: 0,
+            otp: 0,
+            resetLink: 0,
+          }));
           if (!user) reject(createError.Unauthorized("حساب کاربری یافت نشد"));
           return resolve(_id);
         } catch (error) {
@@ -118,14 +133,7 @@ function VerifyRefreshToken(req) {
   });
 }
 
-async function checkPostExist(id) {
-  const { PostModel } = require("../models/post");
-  if (!mongoose.isValidObjectId(id))
-    throw createError.BadRequest("شناسه پست ارسال شده صحیح نمیباشد");
-  const post = await PostModel.findById(id);
-  if (!post) throw createError.NotFound("پستی یافت نشد");
-  return post;
-}
+
 function calculateDateDuration(endTime) {
   const { years, months, days, hours, minutes, seconds } = intervalToDuration({
     start: new Date(),
@@ -146,7 +154,14 @@ const farsiDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"]
 function toPersianNumbers(n) {
   return n.toString().replace(/\d/g, (x) => farsiDigits[parseInt(x)]);
 }
-
+function generateRandomNumber(length) {
+  if (length === 5) {
+    return Math.floor(10000 + Math.random() * 90000);
+  }
+  if (length === 6) {
+    return Math.floor(100000 + Math.random() * 900000);
+  }
+}
 module.exports = {
   calculateDateDuration,
   checkEmail,
@@ -157,5 +172,6 @@ module.exports = {
   VerifyRefreshToken,
   copyObject,
   deleteInvalidPropertyInObject,
-  checkPostExist,
+  generateRandomNumber
+
 };

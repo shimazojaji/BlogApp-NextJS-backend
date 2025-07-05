@@ -1,4 +1,5 @@
 const {
+
   VerifyRefreshToken,
   setAccessToken,
   setRefreshToken,
@@ -6,23 +7,135 @@ const {
 const Controller = require("./controller");
 const createError = require("http-errors");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
-const {
-  validateSigninPrivateUserSchema,
-  validateSigninPublicUserSchema
+// const {
+//   validateSigninPrivateUserSchema,
+//   validateSigninPublicUserSchema
 
-} = require("../validators/user/auth.schema");
+// } = require("../validators/user/auth.schema");
 const path = require("path");
-const { PrivateUserModel } = require("../../models/user/privateuser");
 const bcrypt = require("bcryptjs");
 const { HostModel } = require("../../models/host");
-const { GuestModel } = require("../../models/guest");
 const { ServerToguestModel } = require("../../models/serverToguest");
+const CODE_EXPIRES = 90 * 1000; //90 seconds in miliseconds
+const Kavenegar = require("kavenegar");
+const { GuestModel } = require("../../models/guest");
+const { OperatorModel } = require("../../models/user/operator");
+
 class UserAuthController extends Controller {
   constructor() {
     super();
+    this.code = 0;
+    // this.mobile = null;
   }
 
-  async signinPrivateUser(req, res) {
+  /*  async sendOtp(req, res) {
+     const { mobile } = req.body;
+     if (!mobile) {
+       throw createError.BadRequest("شماره موبایل معتبر را وارد کنید");
+     }
+ 
+     // ✅ Generate random OTP code (you can change this logic)
+     const code = Math.floor(100000 + Math.random() * 900000); // e.g., 6-digit OTP
+ 
+     const kaveNegarApi = Kavenegar.KavenegarApi({
+       apikey: `${process.env.KAVENEGAR_API_KEY}`,
+     });
+ 
+     kaveNegarApi.VerifyLookup(
+       {
+         receptor: mobile,
+         token: code.toString(),
+         template: "registerVerify",
+       },
+       (response, status) => {
+         console.log("kavenegar message status", status, mobile);
+ 
+         if (response && status === 200) {
+           return res.status(HttpStatus.OK).send({
+             statusCode: HttpStatus.OK,
+             data: {
+               message: `کد تائید برای شماره موبایل ${toPersianDigits(mobile)} ارسال گردید`,
+               expiresIn: CODE_EXPIRES,
+               mobile,
+               code, // Optional: you may want to remove this in production
+             },
+           });
+         }
+ 
+         return res.status(status).send({
+           statusCode: status,
+           message: "کد اعتبارسنجی ارسال نشد",
+         });
+       }
+     );
+   }
+ 
+   async getOtp(req, res) {
+ 
+     let { mobile } = req.body;
+ 
+     if (!mobile)
+       throw createError.BadRequest("شماره موبایل معتبر را وارد کنید");
+ 
+     mobile = mobile.trim();
+     this.mobile = mobile;
+     this.code = generateRandomNumber(6);
+ 
+     const result = await this.saveUser(mobile);
+     if (!result) throw createError.Unauthorized("ورود شما انجام نشد.");
+ 
+     // send OTP
+     this.sendOTP(mobile, res);
+   }
+   async saveUser(mobile) {
+     const otp = {
+       code: this.code,
+       expiresIn: Date.now() + CODE_EXPIRES,
+     };
+ 
+     const user = await this.checkUserExist(mobile);
+     if (user) return await this.updateUser(mobile, { otp });
+ 
+     return await GuestModel.create({
+       mobile,
+       otp,
+       // role: ROLES.USER,
+     });
+   }
+ 
+   sendOTP(mobile, res) {
+     const kaveNegarApi = Kavenegar.KavenegarApi({
+       apikey: `${process.env.KAVENEGAR_API_KEY}`,
+     });
+     kaveNegarApi.VerifyLookup(
+       {
+         receptor: mobile,
+         token: this.code,
+         template: "registerVerify",
+       },
+       (response, status) => {
+         console.log("kavenegar message status", status);
+         if (response && status === 200)
+           return res.status(HttpStatus.OK).send({
+             statusCode: HttpStatus.OK,
+             data: {
+               message: `کد تائید برای شماره موبایل ${toPersianDigits(
+                 phoneNumber
+               )} ارسال گردید`,
+               expiresIn: CODE_EXPIRES,
+               phoneNumber,
+             },
+           });
+ 
+         return res.status(status).send({
+           statusCode: status,
+           message: "کد اعتبارسنجی ارسال نشد",
+         });
+       }
+     );
+   } */
+
+ /*  async signinPrivateUser(req, res) {
     await validateSigninPrivateUserSchema(req.body);
 
     const { username, password } = req.body;
@@ -54,20 +167,20 @@ class UserAuthController extends Controller {
       },
     });
   }
-
+ */
   async signinPublicUser(req, res) {
     await validateSigninPublicUserSchema(req.body);
 
     const { mobile, role } = req.body;
 
 
-    const user = await this.findUserByRole(mobile,role);
+    const user = await this.findUserByRole(mobile, role);
     if (!user) {
       throw createError.BadRequest(" کاربری با این موبایل پیدا نشد  ");
     }
 
 
-    
+
 
     await setAccessToken(res, user);
     await setRefreshToken(res, user);
@@ -83,23 +196,47 @@ class UserAuthController extends Controller {
 
   }
 
-async findUserByRole(mobile, role) {
-  switch (role) {
-    case "guest":
-      return await GuestModel.findOne({ mobile });
-    case "host":
-      return await HostModel.findOne({ mobile });
-    case "server":
-      return await ServerToguestModel.findOne({ mobile });
-    default:
-      throw createError.BadRequest("نقش نامعتبر است");
+  async login(req, res) {
+    await validateSigninPublicUserSchema(req.body);
+    const { mobile, role } = req.body;
+
+    const user = await this.findUserByRole(mobile, role);
+    if (!user) throw createError.BadRequest("کاربری یافت نشد");
+
+    await setAccessToken(res, user);
+    await setRefreshToken(res, user);
+    let WELLCOME_MESSAGE = `ورود با موفقیت انجام شد`;
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: WELLCOME_MESSAGE,
+        user,
+        role
+      },
+    });
+
+
+
   }
-}
+
+  async findUserByRole(mobile, role) {
+    switch (role) {
+      case "guest":
+        return await GuestModel.findOne({ mobile });
+      case "host":
+        return await HostModel.findOne({ mobile });
+      case "server":
+        return await ServerToguestModel.findOne({ mobile });
+      default:
+        throw createError.BadRequest("نقش نامعتبر است");
+    }
+  }
 
 
   async refreshToken(req, res) {
     const userId = await VerifyRefreshToken(req);
-    const user = await PrivateUserModel.findById(userId);
+    const user = (await OperatorModel.findById(userId)) || (await GuestModel.findById(userId)) || (await HostModel.findById(userId)) || ((await ServerToguestModel.findById(userId)));
     await setAccessToken(res, user);
     await setRefreshToken(res, user);
     return res.status(HttpStatus.OK).json({
@@ -109,10 +246,10 @@ async findUserByRole(mobile, role) {
       },
     });
   }
-  async checkUserExist(username) {
-    const user = await PrivateUserModel.findOne({ username });
-    return user;
-  }
+  // async checkUserExist(username) {
+  //   const user = await PrivateUserModel.findOne({ username });
+  //   return user;
+  // }
   logout(req, res) {
     const cookieOptions = {
       maxAge: 1,
@@ -132,27 +269,46 @@ async findUserByRole(mobile, role) {
       auth: false,
     });
   }
- async getUserProfilePv(req, res) {
-    const { _id: userId } = req.user;
-    const user = await PrivateUserModel.findById(userId, { otp: 0 });
+
+
+  // async getUserProfilePv(req, res) {
+  //   const { _id: userId } = req.user;
+  //   const user = await PrivateUserModel.findById(userId, { otp: 0 });
+
+  //   return res.status(HttpStatus.OK).json({
+  //     statusCode: HttpStatus.OK,
+  //     data: {
+  //       user,
+  //     },
+  //   });
+  // }
+  // async getAllUsers(req, res) {
+  //   const users = await PrivateUserModel.find();
+
+  //   return res.status(HttpStatus.OK).json({
+  //     statusCode: HttpStatus.OK,
+  //     data: {
+  //       users,
+  //     },
+  //   });
+  // }
+
+  async getProfileGuest(req, res) {
+    const { _id } = req.user; // Instead of mobile from query (more secure)
+    const guest = await GuestModel.findById(_id); // or GuestModel.findOne({ mobile })
+
+    if (!guest) {
+      throw createError.NotFound("مهمان پیدا نشد");
+    }
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
-      data: {
-        user,
-      },
+      data: { guest },
     });
   }
-  async getAllUsers(req, res) {
-    const users = await PrivateUserModel.find();
 
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      data: {
-        users,
-      },
-    });
-  }
+
+
 
 }
 

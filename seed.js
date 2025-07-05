@@ -7,8 +7,7 @@ const HostData = require("./data/db.host.json")
 const Application = require("./app/server");
 const { HostModel } = require("./app/models/host");
 
-// const { GuestModel } = require("./app/models/guest");
-// const {PrivateUserModel}=require("./app/models/user/privateuser");
+
 
 (async () => {
   new Application();

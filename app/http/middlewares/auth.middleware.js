@@ -2,7 +2,8 @@ const cookieParser = require("cookie-parser");
 const createHttpError = require("http-errors");
 const JWT = require("jsonwebtoken");
 const axios = require("axios");
-const { PrivateUserModel } = require("../../models/user/privateuser");
+const { GuestModel } = require("../../models/guest");
+const { OperatorModel } = require("../../models/user/operator");
 async function isAuthWithCookie(req, res, next) {
   try {
     const userToken = req.signedCookies["userToken"];
@@ -16,7 +17,7 @@ async function isAuthWithCookie(req, res, next) {
     JWT.verify(token, process.env.TOKEN_SECRET_KEY, async (err, payload) => {
       if (err) throw createHttpError.Unauthorized("توکن نامعتبر است");
       const { _id } = payload;
-      const user = await PrivateUserModel.findById(_id, {
+      const user = await GuestModel.findById(_id, {
         password: 0,
         resetLink: 0,
       });
@@ -46,10 +47,8 @@ async function verifyAccessToken(req, res, next) {
         try {
           if (err) throw createHttpError.Unauthorized("توکن نامعتبر است");
           const { _id } = payload;
-          const user = await PrivateUserModel.findById(_id, {
-            password: 0,
-            otp: 0,
-          });
+          const user = (await OperatorModel.findById(_id, { password: 0, otp: 0 })) ||
+            (await GuestModel.findById(_id, { otp: 0 }));
           if (!user) throw createHttpError.Unauthorized("حساب کاربری یافت نشد");
           req.user = user;
           return next();

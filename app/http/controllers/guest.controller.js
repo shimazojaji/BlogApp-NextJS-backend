@@ -1,89 +1,104 @@
-
 const createHttpError = require("http-errors");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const { GuestModel } = require("../../models/guest");
 const { addGuestSchema } = require("../validators/guest/guest.schema");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const Kavenegar = require("kavenegar");
+const CODE_EXPIRES = 90 * 1000; // 90 seconds
 
-  //List (guest) entries 
-
+// Get list of guests
 const getListOfGuests = async (req, res, next) => {
   try {
     const query = req.query;
+    const guests = await GuestModel.find(query);
 
-
-    const guests = await Promise.all([
-      GuestModel.find(query),
-    ]);
-
-    res.json({
-      date:{
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
         guests,
-      }
+      },
     });
   } catch (err) {
     next(err);
   }
 };
+
+// Add a new guest
 const addNewGuest = async (req, res, next) => {
   try {
-    console.log("BODY RECEIVED:", req.body); 
     await addGuestSchema.validateAsync(req.body);
 
-    const exists = await GuestModel.findOne({ mobile: req.body.mobile });
+    const { mobile } = req.body;
+    const exists = await GuestModel.findOne({ mobile });
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلاً ثبت شده است");
 
-    const guests = await GuestModel.create(req.body);
+    const guest = await GuestModel.create(req.body);
 
+    
     res.status(HttpStatus.CREATED).json({
       statusCode: HttpStatus.CREATED,
       message: "اطلاعات میزبان با موفقیت ثبت شد",
-      data: guests,
+      data: guest,
     });
   } catch (err) {
     next(err);
   }
 };
 
-const removeGuest = async(req,res)=>{
- 
+
+
+// Remove a guest
+const removeGuest = async (req, res, next) => {
+  try {
     const { id } = req.params;
     await findGuestById(id);
+
     const guest = await GuestModel.findByIdAndDelete(id);
-    if (!guest._id) throw createHttpError.InternalServerError(" پست حذف نشد");
+    if (!guest || !guest._id) {
+      throw createHttpError.InternalServerError("پست حذف نشد");
+    }
+
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
         message: "پست با موفقیت حذف شد",
       },
     });
-
+  } catch (err) {
+    next(err);
   }
-  const findGuestById= async(id) =>{
-    if (!mongoose.isValidObjectId(id))
-      throw createHttpError.BadRequest("شناسه پست نامعتبر است");
+};
+
+// Find guest by ID
+const findGuestById = async (id) => {
+  if (!mongoose.isValidObjectId(id)) {
+    throw createHttpError.BadRequest("شناسه پست نامعتبر است");
   }
 
-  const updateGuest= async (req, res) =>{
+  const guest = await GuestModel.findById(id);
+  if (!guest) {
+    throw createHttpError.NotFound("زائر پیدا نشد");
+  }
+
+  return guest;
+};
+
+// Update guest
+const updateGuest = async (req, res, next) => {
+  try {
     const { id } = req.params;
-    const { namefamily, mobile, ...rest } = req.body;
+    await findGuestById(id);
 
-    const guest = await this.findGuestById(id);
-    const data = copyObject(rest);
-   
+    const data = { ...req.body };
 
-
-  
-
-    const updateGuestResult = await GuestModel.updateOne(
+    const updateResult = await GuestModel.updateOne(
       { _id: id },
-      
+      { $set: data }
     );
 
-    if (!updateGuestResult.modifiedCount)
-      throw new createHttpError.InternalServerError(
-        "به روزرسانی پست انجام نشد"
-      );
+    if (!updateResult.modifiedCount) {
+      throw new createHttpError.InternalServerError("به روزرسانی پست انجام نشد");
+    }
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
@@ -91,14 +106,31 @@ const removeGuest = async(req,res)=>{
         message: "به روزرسانی زائر با موفقیت انجام شد",
       },
     });
+  } catch (err) {
+    next(err);
   }
+};
 
-  const  getGuestById=async(req, res) =>{
+// Get guest by ID
+const getGuestById = async (req, res, next) => {
+  try {
     const { id } = req.params;
     const guest = await findGuestById(id);
-    
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: guest,
+    });
+  } catch (err) {
+    next(err);
   }
+};
+
+// Exports
 module.exports = {
   addNewGuest,
-  getListOfGuests,removeGuest,updateGuest,getGuestById
+  getListOfGuests,
+  removeGuest,
+  updateGuest,
+  getGuestById,
 };
