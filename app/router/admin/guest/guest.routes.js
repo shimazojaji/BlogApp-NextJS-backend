@@ -1,13 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose");
-const createHttpError = require("http-errors");
-const { StatusCodes: HttpStatus } = require("http-status-codes");
-const { addGuestSchema } = require("../../http/validators/guest/guest.schema");
-const { GuestModel } = require("../../models/guest");
-const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
+
+const { verifyAccessToken, decideAuthMiddleware } = require("../../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { removeGuest, updateGuest, getGuestById, getAllGuest, addNewGuest } = require("../../http/controllers/guest.controller");
+const { removeGuest, updateGuest, getGuestById, getAllGuest, addNewGuest } = require("../../../http/controllers/guest.controller");
 
 
 // POST /guest/add - Create new entry

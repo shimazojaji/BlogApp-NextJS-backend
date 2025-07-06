@@ -9,6 +9,8 @@ router.use("/server", serverRoutes);
 router.use("/host", hostRoutes);
 router.use("/guest", guestRoutes);
 router.use("/user",userAuthRoutes);
+router.use("/admin",adminRoutes);
+
 module.exports = router;
 
 

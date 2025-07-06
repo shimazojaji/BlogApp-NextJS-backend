@@ -6,6 +6,7 @@ router.post("/get-otp", expressAsyncHandler(UserAuthController.getOtp));
 router.post("/send-otp", expressAsyncHandler(UserAuthController.sendOtp));
 
  router.post("/adminlogin", expressAsyncHandler(UserAuthController.AdminLogin));
+ router.post("/operator", expressAsyncHandler(UserAuthController.OperatorLogin));
 
 
 router.post("/signinpb", expressAsyncHandler(UserAuthController.signinPublicUser));
@@ -18,9 +19,9 @@ router.get(
 
 
 router.get(
-  "/profilePv",
+  "/profileOperator",
   verifyAccessToken,
-  expressAsyncHandler(UserAuthController.getUserProfilePv)
+  expressAsyncHandler(UserAuthController.getProfileOperator)
 );
 router.get(
   "/profileGuest",

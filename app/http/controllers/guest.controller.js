@@ -54,13 +54,13 @@ const removeGuest = async (req, res, next) => {
 
     const guest = await GuestModel.findByIdAndDelete(id);
     if (!guest || !guest._id) {
-      throw createHttpError.InternalServerError("پست حذف نشد");
+      throw createHttpError.InternalServerError("زائر حذف نشد");
     }
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
-        message: "پست با موفقیت حذف شد",
+        message: "زائر با موفقیت حذف شد",
       },
     });
   } catch (err) {

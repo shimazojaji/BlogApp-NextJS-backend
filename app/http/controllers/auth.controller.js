@@ -22,6 +22,7 @@ const { GuestModel } = require("../../models/guest");
 const { OperatorModel } = require("../../models/user/operator");
 const { validateAdminLoginSchema } = require("../validators/user/admin.schema");
 const { AdminModel } = require("../../models/user/admin");
+const { validateperatorLoginSchema, validatePartialOperatorSchema } = require("../validators/operator/operator.schema");
 
 class UserAuthController extends Controller {
   constructor() {
@@ -138,9 +139,9 @@ class UserAuthController extends Controller {
    } */
 
 
-// ===============
-// Admin
-// ===============
+  // ===============
+  // Admin
+  // ===============
   async AdminLogin(req, res) {
     await validateAdminLoginSchema(req.body);
 
@@ -173,15 +174,39 @@ class UserAuthController extends Controller {
       },
     });
   }
- 
- 
+
+
   async checkAdminExist(username) {
     const admin = await AdminModel.findOne({ username });
     return admin;
   }
 
 
- 
+  async OperatorLogin(req, res) {
+    await validatePartialOperatorSchema(req.body)
+    const { code } = req.body;
+    const user = await OperatorModel.findOne({ code })
+
+    if (!user) {
+      throw createError.BadRequest(" کاربری  پیدا نشد  ");
+    }
+
+
+
+
+    await setAccessToken(res, user);
+    await setRefreshToken(res, user);
+    let WELLCOME_MESSAGE = `ورود با موفقیت انجام شد`;
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: WELLCOME_MESSAGE,
+        user,
+      },
+    });
+  }
+
   async signinPublicUser(req, res) {
     await validateSigninPublicUserSchema(req.body);
 
@@ -321,10 +346,9 @@ class UserAuthController extends Controller {
     });
   }
 
- async getProfileAdmin(req, res) {
+  async getProfileAdmin(req, res) {
     const { _id } = req.user; // Instead of mobile from query (more secure)
     const admin = await AdminModel.findById(_id); // or GuestModel.findOne({ mobile })
-console.log(admin)
     if (!admin) {
       throw createError.NotFound("ادمین پیدا نشد");
     }
@@ -335,7 +359,18 @@ console.log(admin)
     });
   }
 
+ async getProfileOperator(req, res) {
+    const { _id } = req.user; // Instead of mobile from query (more secure)
+    const operator = await OperatorModel.findById(_id); // or GuestModel.findOne({ mobile })
+    if (!operator) {
+      throw createError.NotFound("ادمین پیدا نشد");
+    }
 
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: { operator },
+    });
+  }
 
 }
 
