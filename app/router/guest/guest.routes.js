@@ -6,7 +6,7 @@ const { addGuestSchema } = require("../../http/validators/guest/guest.schema");
 const { GuestModel } = require("../../models/guest");
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { removeGuest, updateGuest, getGuestById } = require("../../http/controllers/guest.controller");
+const { removeGuest, updateGuest, getGuestById, changeStatus } = require("../../http/controllers/guest.controller");
 
 
 // POST /guest/add - Create new entry
@@ -48,5 +48,9 @@ router.get("/list", async (req, res, next) => {
 router.delete("/remove/:id", verifyAccessToken, expressAsyncHandler(removeGuest));
 router.patch("/update/:id", verifyAccessToken, expressAsyncHandler(updateGuest));
 router.get("/:id", decideAuthMiddleware, expressAsyncHandler(getGuestById));
-
+router.post(
+  "/status/:id",
+  verifyAccessToken,
+  expressAsyncHandler(changeStatus)
+);
 module.exports = router;

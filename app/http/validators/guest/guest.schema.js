@@ -4,7 +4,7 @@ const Joi = require("joi");
 const addGuestSchema = Joi.object({
   namefamily: Joi.string().min(5).max(100).required()
     .error(createHttpError.BadRequest("نام و نام خانوادگی را به درستی وارد کنید")),
-    
+
   mobile: Joi.string().pattern(/^09\d{9}$/).required()
     .error(createHttpError.BadRequest("موبایل را به درستی وارد کنید")),
 
@@ -24,20 +24,22 @@ const addGuestSchema = Joi.object({
     .error(createHttpError.BadRequest("تاریخ را به درستی وارد کنید")),
 
   // Optional fields (validate type only if provided)
-  status: Joi.string().valid("isPending", "approved", "rejected","accepted","accepting","entered","exited").optional(),
+  status: Joi.string().valid("isPending", "approved", "rejected", "accepted", "accepting", "entered", "exited").optional(),
 
   hostel: Joi.string().optional(),
+  hostelAddress: Joi.string().optional(),
 
   isNeedDrug: Joi.boolean().optional(),
   isNeedMedicine: Joi.boolean().optional(),
   isNeedFood: Joi.boolean().optional(),
   isNeedSpecialServices: Joi.boolean().optional(),
   isNeedShower: Joi.boolean().optional(),
-    isServiced: Joi.boolean().optional(),
+  isServiced: Joi.boolean().optional(),
+  comment: Joi.string().optional(),
 
 });
 
-  
+
 module.exports = {
   addGuestSchema,
 };

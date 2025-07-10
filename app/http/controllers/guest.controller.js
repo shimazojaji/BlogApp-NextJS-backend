@@ -134,6 +134,88 @@ const getAllGuest= async (req, res, next) => {
   }
 }
 
+
+// const changeStatus = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+// const { status } = req.body
+//     // ✅ بررسی اولیه
+//     if (!id || !status)
+//       return res.status(400).json({ message: "شناسه یا وضعیت ناقص است." });
+
+//     // ✅ بررسی وجود مهمان
+//     const guest = await GuestModel.findById(id);
+//     if (!guest)
+//       return res.status(404).json({ message: "زائر پیدا نشد." });
+
+//     // ✅ بروزرسانی وضعیت
+//     guest.status = status;
+//     await guest.save();
+
+//     return res.status(200).json({
+//       message: `وضعیت زائر با موفقیت به '${status}' تغییر یافت.`,
+//       data: guest,
+//     });
+//   } catch (error) {
+//     console.error("❌ خطا در تغییر وضعیت:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "خطا در تغییر وضعیت زائر", error: error.message });
+//   }
+// };
+
+const changeStatus=async(req, res) =>{
+  const { id: guestId } = req.params;
+
+  // مرحله‌ای: accepted -> entered -> exited
+  const statusFlow = ["accepted", "entered", "exited"];
+
+  // پیدا کردن مهمان
+  const guest = await GuestModel.findById(guestId);
+  if (!guest) {
+    return res.status(404).json({
+      message: "زائر پیدا نشد",
+    });
+  }
+
+  const currentStatusIndex = statusFlow.indexOf(guest.status);
+
+  if (currentStatusIndex === -1) {
+    return res.status(400).json({
+      message: "وضعیت فعلی زائر نامعتبر است.",
+    });
+  }
+
+  // اگر در آخرین وضعیت است (exited)، تغییر نده
+  if (currentStatusIndex === statusFlow.length - 1) {
+    return res.status(400).json({
+      message: "وضعیت نهایی قبلاً ثبت شده است.",
+    });
+  }
+
+  // تعیین وضعیت بعدی
+  const nextStatus = statusFlow[currentStatusIndex + 1];
+
+  // بروزرسانی در دیتابیس
+  const updateResult = await GuestModel.updateOne(
+    { _id: guestId },
+    { $set: { status: nextStatus } }
+  );
+
+  if (updateResult.modifiedCount === 0) {
+    throw createHttpError.BadRequest("عملیات تغییر وضعیت ناموفق بود.");
+  }
+
+  return res.status(200).json({
+    statusCode: 200,
+    data: {
+      message: `وضعیت زائر به '${nextStatus}' تغییر یافت.`,
+      guest: guest,
+    },
+  });
+}
+
+
 // Exports
 module.exports = {
   addNewGuest,
@@ -142,4 +224,5 @@ module.exports = {
   removeGuest,
   updateGuest,
   getGuestById,
+  changeStatus
 };

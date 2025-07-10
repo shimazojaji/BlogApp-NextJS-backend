@@ -236,7 +236,7 @@ class UserAuthController extends Controller {
   }
 
   async login(req, res) {
-    await validateSigninPublicUserSchema(req.body);
+    // await validateSigninPublicUserSchema(req.body);
     const { mobile, role } = req.body;
 
     const user = await this.findUserByRole(mobile, role);

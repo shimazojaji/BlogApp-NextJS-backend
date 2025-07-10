@@ -1,3 +1,4 @@
+const createHttpError = require("http-errors");
 const Joi = require("joi");
 
 const addHostSchema = Joi.object({
@@ -11,6 +12,9 @@ const addHostSchema = Joi.object({
     "string.pattern.base": "شماره موبایل صحیح نمی‌باشد",
     "any.required": "شماره موبایل الزامی است",
   }),
+  isFood: Joi.boolean().optional(),
+  isMedical: Joi.boolean().optional(),
+
   guestNo: Joi.number().greater(-1).required().messages({
     "number.base": "تعداد زائر باید یک عدد باشد",
     "number.greater": "تعداد زائر باید بیشتر از صفر باشد",
@@ -19,7 +23,8 @@ const addHostSchema = Joi.object({
   guestGeneder: Joi.string().required().messages({
     "any.required": "جنسیت زائر الزامی است",
   }),
-
+  address: Joi.string().min(5).max(100).required()
+    .error(createHttpError.BadRequest("آدرس اسکان الزامی است و باید معتبر باشد")),
   startDate: Joi.date().iso().required().messages({
     "date.format": "تاریخ شروع باید به فرمت YYYY-MM-DD باشد",
     "any.required": "تاریخ شروع الزامی است",

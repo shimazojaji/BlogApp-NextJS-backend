@@ -2,6 +2,7 @@ const createHttpError = require("http-errors");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const mongoose = require("mongoose");
 const { OperatorModel } = require("../../models/user/operator");
+const { validateFullOperatorSchema } = require("../validators/operator/operator.schema");
 
 
 // Get list of perators

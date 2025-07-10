@@ -10,6 +10,7 @@ const GuestSchema = new mongoose.Schema({
   startDate: { type: String, required: true },
   status: { type: String, default: "isPending" },
   hostel: { type: String, default: "unknown" },
+  hostelAddress: { type: String, default: "" },
   isNeedDrug: { type: Boolean, default: false },
   isNeedMedicine: { type: Boolean, default: false },
   isNeedFood: { type: Boolean, default: false },
@@ -17,7 +18,8 @@ const GuestSchema = new mongoose.Schema({
   isNeedShower: { type: Boolean, default: false },
   isServiced: { type: Boolean, default: false },
   statusChangedAt: { type: Date },
-  userRole: { type: String, default: "USER" }
+  userRole: { type: String, default: "USER" },
+  comment: { type: String }
 }, {
   timestamps: true,
 });
