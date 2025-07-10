@@ -215,6 +215,41 @@ const changeStatus=async(req, res) =>{
   });
 }
 
+const servicedGuest = async (req, res) => {
+  const { id: guestId } = req.params;
+
+  const guest = await GuestModel.findById(guestId);
+
+  if (!guest) {
+    throw createHttpError.NotFound("زائر یافت نشد");
+  }
+
+  // برعکس کردن وضعیت
+  const newStatus = !guest.isServiced;
+
+  const guestUpdate = await GuestModel.updateOne(
+    { _id: guestId },
+    {
+      $set: {
+        isServiced: newStatus,
+        statusChangedAt: new Date(),
+      },
+    }
+  );
+
+  if (guestUpdate.modifiedCount === 0) {
+    throw createHttpError.BadRequest("عملیات ناموفق بود.");
+  }
+
+  const message = newStatus
+    ? "خدمات انجام شد"
+    : "خدمات لغو شد";
+
+  return res.status(200).json({
+    statusCode: 200,
+    data: { message },
+  });
+};
 
 // Exports
 module.exports = {
@@ -224,5 +259,5 @@ module.exports = {
   removeGuest,
   updateGuest,
   getGuestById,
-  changeStatus
+  changeStatus,servicedGuest
 };

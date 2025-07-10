@@ -154,9 +154,44 @@ const getHostelById = async (req, res, next) => {
         next(err);
     }
 }; 
+const foodService = async (req, res) => {
+  const { id: hostelId } = req.params;
+
+  const hostel = await HostelModel.findById(hostelId);
+
+  if (!hostel) {
+    throw createHttpError.NotFound("اسکان عمومی یافت نشد");
+  }
+
+  // برعکس کردن وضعیت
+  const newStatus = !hostel.foodStatus;
+console.log(newStatus)
+  const hostelUpdate = await HostelModel.updateOne(
+    { _id: hostelId },
+    {
+      $set: {
+        foodStatus: newStatus,
+        statusChangedAt: new Date(),
+      },
+    }
+  );
+
+  if (hostelUpdate.modifiedCount === 0) {
+    throw createHttpError.BadRequest("عملیات ناموفق بود.");
+  }
+
+  const message = newStatus
+    ? "غذا موجود  شد"
+    : "  موجودی غذا تمام شد";
+
+  return res.status(200).json({
+    statusCode: 200,
+    data: { message },
+  });
+};
 
 
 // Exports
 module.exports = {
-    getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity
+    getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity,foodService
 }

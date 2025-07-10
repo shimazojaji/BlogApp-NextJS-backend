@@ -6,7 +6,7 @@ const { addGuestSchema } = require("../../http/validators/guest/guest.schema");
 const { GuestModel } = require("../../models/guest");
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { removeGuest, updateGuest, getGuestById, changeStatus } = require("../../http/controllers/guest.controller");
+const { removeGuest, updateGuest, getGuestById, changeStatus, servicedGuest } = require("../../http/controllers/guest.controller");
 
 
 // POST /guest/add - Create new entry
@@ -52,5 +52,10 @@ router.post(
   "/status/:id",
   verifyAccessToken,
   expressAsyncHandler(changeStatus)
+);
+router.post(
+  "/service/:id",
+  verifyAccessToken,
+  expressAsyncHandler(servicedGuest)
 );
 module.exports = router;

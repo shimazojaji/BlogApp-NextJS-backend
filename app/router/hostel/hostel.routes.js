@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { addHostel, getHostels, removeHostel, updateHostel, getHostelById, decreaseCapacity } = require("../../http/controllers/hostel.controller");
+const { addHostel, getHostels, removeHostel, updateHostel, getHostelById, decreaseCapacity, foodService } = require("../../http/controllers/hostel.controller");
 
 
 // POST /hostel/add - Create new entry
@@ -22,5 +22,9 @@ router.patch("/update/:id", verifyAccessToken, expressAsyncHandler(updateHostel)
 router.patch("/decrease/:id", verifyAccessToken, expressAsyncHandler(decreaseCapacity));
 
 router.get("/:id", decideAuthMiddleware, expressAsyncHandler(getHostelById));
-
+router.post(
+  "/food/:id",
+  verifyAccessToken,
+  expressAsyncHandler(foodService)
+);
 module.exports = router;

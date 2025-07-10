@@ -167,9 +167,44 @@ const getHostById = async (req, res, next) => {
         next(err);
     }
 }; 
+const foodService = async (req, res) => {
+  const { id: hostId } = req.params;
+
+  const host = await HostModel.findById(hostId);
+
+  if (!host) {
+    throw createHttpError.NotFound("اسکان خصوصی یافت نشد");
+  }
+
+  // برعکس کردن وضعیت
+  const newStatus = !host.isFood;
+
+  const hostUpdate = await HostModel.updateOne(
+    { _id: hostId },
+    {
+      $set: {
+        isFood: newStatus,
+        statusChangedAt: new Date(),
+      },
+    }
+  );
+
+  if (hostUpdate.modifiedCount === 0) {
+    throw createHttpError.BadRequest("عملیات ناموفق بود.");
+  }
+
+  const message = newStatus
+    ? "غذا موجود  شد"
+    : "  موجودی غذا تمام شد";
+
+  return res.status(200).json({
+    statusCode: 200,
+    data: { message },
+  });
+};
 
 
 module.exports = {
   addNewHost,
-  getListOfHosts,removeHost,decreaseGuestNo,updateHost,getHostById
+  getListOfHosts,removeHost,decreaseGuestNo,updateHost,getHostById,foodService
 };
