@@ -5,10 +5,11 @@ const HostelSchema = new mongoose.Schema({
   address: { type: String, required: true },
   // hostelOwnName: { type: String, required: true },
   capacity: { type: Number, required: true },
-  foodStatus: { type: String, enum: ["yes", "no"], required: true },
+  foodStatus: { type: Boolean, default: false  },
   isMedical: { type: Boolean, default: false },
+operatorId:{type:String,default:"unknown"},
 
-  bathroomStatus: { type: String, enum: ["yes", "no"], required: true },
+  bathroomStatus: { type: Boolean, default: false },
 }, {
   timestamps: true,
 });

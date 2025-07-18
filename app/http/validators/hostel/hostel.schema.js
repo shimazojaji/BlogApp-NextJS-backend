@@ -15,8 +15,7 @@ async function validateHostelSchema(data) {
     foodStatus: Joi.boolean.required()
       .error(createHttpError.BadRequest("وضعیت غذا باید بله یا خیر باشد")),
     isMedical: Joi.boolean().optional(),
-    bathroomStatus: Joi.string().valid("yes", "no").required()
-      .error(createHttpError.BadRequest("وضعیت حمام باید 'yes' یا 'no' باشد")),
+    bathroomStatus: Joi.boolean().optional(),
   });
 
   return await HostelSchema.validateAsync(data);

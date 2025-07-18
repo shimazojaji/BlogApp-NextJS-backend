@@ -20,11 +20,12 @@ const addGuestSchema = Joi.object({
   city: Joi.string().required()
     .error(createHttpError.BadRequest("شهر را به درستی وارد کنید")),
 
-  startDate: Joi.date().iso().required()
+  startDate: Joi.date().iso().optional()
     .error(createHttpError.BadRequest("تاریخ را به درستی وارد کنید")),
 
   // Optional fields (validate type only if provided)
-  status: Joi.string().valid("isPending", "approved", "rejected", "accepted", "accepting", "entered", "exited").optional(),
+  status: Joi.string().valid("Pending", "accepted", "inWay", "entered", "exited").optional(),
+  statusChangedAt: Joi.date().iso().optional(),
 
   hostel: Joi.string().optional(),
   hostelAddress: Joi.string().optional(),
@@ -36,7 +37,9 @@ const addGuestSchema = Joi.object({
   isNeedShower: Joi.boolean().optional(),
   isServiced: Joi.boolean().optional(),
   comment: Joi.string().optional(),
-
+  operator: Joi.string().optional(),
+  registerType: Joi.string().optional(),
+  updateName: Joi.string().optional()
 });
 
 
