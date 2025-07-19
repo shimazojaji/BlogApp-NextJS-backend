@@ -363,7 +363,7 @@ class UserAuthController extends Controller {
     const { _id } = req.user; // Instead of mobile from query (more secure)
     const operator = await OperatorModel.findById(_id); // or GuestModel.findOne({ mobile })
     if (!operator) {
-      throw createError.NotFound("ادمین پیدا نشد");
+      throw createError.NotFound("اپراتور پیدا نشد");
     }
 
     return res.status(HttpStatus.OK).json({

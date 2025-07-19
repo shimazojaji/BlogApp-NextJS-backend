@@ -41,37 +41,37 @@ const addNewHost = async (req, res, next) => {
   }
 };
 const removeHost = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        await findHostById(id);
+  try {
+    const { id } = req.params;
+    await findHostById(id);
 
-        const host = await HostModel.findByIdAndDelete(id);
-        if (!host || !host._id) {
-            throw createHttpError.InternalServerError("میزبان حذف نشد");
-        }
-
-        return res.status(HttpStatus.OK).json({
-            statusCode: HttpStatus.OK,
-            data: {
-                message: "میزبان با موفقیت حذف شد",
-            },
-        });
-    } catch (err) {
-        next(err);
+    const host = await HostModel.findByIdAndDelete(id);
+    if (!host || !host._id) {
+      throw createHttpError.InternalServerError("میزبان حذف نشد");
     }
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "میزبان با موفقیت حذف شد",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 const findHostById = async (id) => {
-    if (!mongoose.isValidObjectId(id)) {
-        throw createHttpError.BadRequest("شناسه میزبان نامعتبر است");
-    }
+  if (!mongoose.isValidObjectId(id)) {
+    throw createHttpError.BadRequest("شناسه میزبان نامعتبر است");
+  }
 
-    const host = await HostModel.findById(id);
-    if (!host) {
-        throw createHttpError.NotFound("میزبان پیدا نشد");
-    }
+  const host = await HostModel.findById(id);
+  if (!host) {
+    throw createHttpError.NotFound("میزبان پیدا نشد");
+  }
 
-    return host;
+  return host;
 };
 
 /**
@@ -99,17 +99,23 @@ const findHostById = async (id) => {
 //   }
 // };
 const decreaseGuestNo = async (req, res, next) => {
+  // await addHostSchema.validateAsync(req.body);
   const { id } = req.params;
-  const amount = parseInt(req.body.amount, 10);
-
-  if (isNaN(amount)) {
+  // console.log(req.body)
+  // const amount = parseInt(req.body.amount, 10);
+ const  maleNo = parseInt(req.body.maleNo, 10);
+  const  femaleNo  = parseInt(req.body.femaleNo, 10);
+  console.log(maleNo, femaleNo)
+  if (isNaN(maleNo) || isNaN(femaleNo)) {
     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
   }
 
   try {
     const result = await HostModel.updateOne(
       { _id: id },
-      { $inc: { guestNo: -amount } }
+       { $inc: { maleNo: -maleNo } },
+      { $inc: { femaleNo: -femaleNo } }
+
     );
 
     if (result.matchedCount === 0) {
@@ -126,47 +132,47 @@ const decreaseGuestNo = async (req, res, next) => {
 };
 // Update host
 const updateHost = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        await findHostById(id);
+  try {
+    const { id } = req.params;
+    await findHostById(id);
 
-        const data = { ...req.body };
+    const data = { ...req.body };
 
-        const updateResult = await HostModel.updateOne(
-            { _id: id },
-            { $set: data }
-        );
+    const updateResult = await HostModel.updateOne(
+      { _id: id },
+      { $set: data }
+    );
 
-        if (!updateResult.modifiedCount) {
-            throw new createHttpError.InternalServerError("به روزرسانی اسکان انجام نشد");
-        }
-
-        return res.status(HttpStatus.OK).json({
-            statusCode: HttpStatus.OK,
-            data: {
-                message: "به روزرسانی اسکان با موفقیت انجام شد",
-            },
-        });
-    } catch (err) {
-        next(err);
+    if (!updateResult.modifiedCount) {
+      throw new createHttpError.InternalServerError("به روزرسانی اسکان انجام نشد");
     }
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روزرسانی اسکان با موفقیت انجام شد",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 
 // Get host by ID
 const getHostById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const host = await findHostById(id);
+  try {
+    const { id } = req.params;
+    const host = await findHostById(id);
 
-        return res.status(HttpStatus.OK).json({
-            statusCode: HttpStatus.OK,
-            data: host,
-        });
-    } catch (err) {
-        next(err);
-    }
-}; 
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: host,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 const foodService = async (req, res) => {
   const { id: hostId } = req.params;
 
@@ -203,8 +209,41 @@ const foodService = async (req, res) => {
   });
 };
 
+const medicalService = async (req, res) => {
+  const { id: hostId } = req.params;
 
+  const host = await HostModel.findById(hostId);
+
+  if (!host) {
+    throw createHttpError.NotFound("اسکان خصوصی یافت نشد");
+  }
+
+  // برعکس کردن وضعیت
+  const newStatus = !host.isMedical;
+
+  const hostUpdate = await HostModel.updateOne(
+    { _id: hostId },
+    {
+      $set: {
+        isMedical: newStatus,
+      },
+    }
+  );
+
+  if (hostUpdate.modifiedCount === 0) {
+    throw createHttpError.BadRequest("عملیات ناموفق بود.");
+  }
+
+  const message = newStatus
+    ? "خدمات پزشکی موجود  شد"
+    : "     خدمات پزشکی موجود نیست";
+
+  return res.status(200).json({
+    statusCode: 200,
+    data: { message },
+  });
+};
 module.exports = {
   addNewHost,
-  getListOfHosts,removeHost,decreaseGuestNo,updateHost,getHostById,foodService
+  getListOfHosts, removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService
 };

@@ -17,7 +17,7 @@ const addGuestSchema = Joi.object({
   childNo: Joi.number().greater(-1).less(101).required()
     .error(createHttpError.BadRequest("تعداد کودکان را به درستی وارد کنید")),
 
-  city: Joi.string().required()
+  city: Joi.string().optional()
     .error(createHttpError.BadRequest("شهر را به درستی وارد کنید")),
 
   startDate: Joi.date().iso().optional()
@@ -37,9 +37,11 @@ const addGuestSchema = Joi.object({
   isNeedShower: Joi.boolean().optional(),
   isServiced: Joi.boolean().optional(),
   comment: Joi.string().optional(),
-  operator: Joi.string().optional(),
+  registerOperator: Joi.string().optional(),
   registerType: Joi.string().optional(),
-  updateName: Joi.string().optional()
+  operatorOperation: Joi.array().items(Joi.string()).optional(),
+  operatorName: Joi.array().items(Joi.string()).optional()
+
 });
 
 

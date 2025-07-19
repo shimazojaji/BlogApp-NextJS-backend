@@ -84,6 +84,8 @@ const findGuestById = async (id) => {
 
 // Update guest
 const updateGuest = async (req, res, next) => {
+  // console.log("📥 req.body:", req.body);
+
   try {
     const { id } = req.params;
     await findGuestById(id);
@@ -92,7 +94,7 @@ const updateGuest = async (req, res, next) => {
 
     const updateResult = await GuestModel.updateOne(
       { _id: id },
-      { $set: data }
+      { $set: data },       { new: true }
     );
 
     if (!updateResult.modifiedCount) {

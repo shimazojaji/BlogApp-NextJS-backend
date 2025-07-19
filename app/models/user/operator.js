@@ -8,7 +8,7 @@ const OperatorSchema = new mongoose.Schema({
   userRole: { type: String, default: "OPERATOR" },
   name: { type: String, required: true },
   operatorStatus: { type: String, default: "offline" },
-  operatorOperation: [{ type: String }],
+  // operatorOperation: [{ type: String }],
   hostelName: { type: String, default: "نامشخص" }
 }, {
   timestamps: true

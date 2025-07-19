@@ -1,5 +1,5 @@
 const express = require("express");
-const { addNewHost, getListOfHosts,  removeHost, decreaseGuestNo, updateHost, getHostById, foodService } = require("../../http/controllers/host.controller");
+const { addNewHost, getListOfHosts,  removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService } = require("../../http/controllers/host.controller");
 const router = express.Router();
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
@@ -22,7 +22,11 @@ router.post(
   expressAsyncHandler(foodService)
 );
 
-
+router.post(
+  "/medical/:id",
+  verifyAccessToken,
+  expressAsyncHandler(medicalService)
+);
  /*  router.get("/available", getAvailableHosts); */
 module.exports = router;
 

@@ -9,8 +9,8 @@ async function validateHostelSchema(data) {
       .error(createHttpError.BadRequest("آدرس اسکان الزامی است و باید معتبر باشد")),
 
 
-    capacity: Joi.number().integer().min(1).max(10000).required()
-      .error(createHttpError.BadRequest("ظرفیت اسکان الزامی است و باید عددی معتبر باشد")),
+  /*   capacity: Joi.number().integer().min(1).max(10000).required()
+      .error(createHttpError.BadRequest("ظرفیت اسکان الزامی است و باید عددی معتبر باشد")), */
 
     foodStatus: Joi.boolean.required()
       .error(createHttpError.BadRequest("وضعیت غذا باید بله یا خیر باشد")),
