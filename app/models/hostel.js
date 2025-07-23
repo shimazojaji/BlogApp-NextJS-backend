@@ -7,7 +7,7 @@ const HostelSchema = new mongoose.Schema({
   femaleNo: { type: Number, required: true },
   foodStatus: { type: Boolean, default: false },
   isMedical: { type: Boolean, default: false },
-  operatorId: { type: String, default: "unknown" },
+  operatorId: { type:mongoose.Schema.Types.ObjectId, ref: 'Operator',required: true},
 
   bathroomStatus: { type: Boolean, default: false },
 }, {

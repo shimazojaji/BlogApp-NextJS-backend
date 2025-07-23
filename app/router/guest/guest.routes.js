@@ -6,16 +6,17 @@ const { addGuestSchema } = require("../../http/validators/guest/guest.schema");
 const { GuestModel } = require("../../models/guest");
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { removeGuest, updateGuest, getGuestById, changeStatus, servicedGuest } = require("../../http/controllers/guest.controller");
+const { removeGuest, updateGuest, getGuestById, changeStatus, servicedGuest, sendMessage } = require("../../http/controllers/guest.controller");
 
 
 // POST /guest/add - Create new entry
 router.post("/add", async (req, res, next) => {
   try {
     await addGuestSchema.validateAsync(req.body);
-
-    const { mobile } = req.body;
-
+    // console.log(req.body)
+    const { mobile, registerOperator, namefamily } = req.body;
+    await sendMessage(mobile, namefamily, registerOperator)
+   
     const exists = await GuestModel.findOne({ mobile });
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلا ثبت شده است");
     const guest = await GuestModel.create(req.body);

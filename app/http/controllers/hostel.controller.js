@@ -115,8 +115,8 @@ const updateHostel = async (req, res, next) => {
 const decreaseCapacity = async (req, res, next) => {
   const { id } = req.params;
   // const amount = parseInt(req.body.amount, 10);
-  const  maleNo  = parseInt(req.body.maleNo, 10);
-  const  femaleNo  = parseInt(req.body.femaleNo, 10);
+  const maleNo = parseInt(req.body.maleNo, 10);
+  const femaleNo = parseInt(req.body.femaleNo, 10);
   // console.log(maleNo, femaleNo)
   if (isNaN(maleNo) || isNaN(femaleNo)) {
     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
@@ -230,5 +230,5 @@ const medicalService = async (req, res) => {
 };
 // Exports
 module.exports = {
-  getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity, foodService, medicalService
+  getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity, foodService, medicalService, findHostelById
 }

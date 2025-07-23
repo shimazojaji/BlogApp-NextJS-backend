@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const OperatorSchema = new mongoose.Schema({
 
@@ -9,7 +10,8 @@ const OperatorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   operatorStatus: { type: String, default: "offline" },
   // operatorOperation: [{ type: String }],
-  hostelName: { type: String, default: "نامشخص" }
+
+  // hostelID: { type: ObjectedId, ref:"Hostel" }
 }, {
   timestamps: true
 });

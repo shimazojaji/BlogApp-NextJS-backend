@@ -362,6 +362,8 @@ class UserAuthController extends Controller {
  async getProfileOperator(req, res) {
     const { _id } = req.user; // Instead of mobile from query (more secure)
     const operator = await OperatorModel.findById(_id); // or GuestModel.findOne({ mobile })
+
+    // console.log(operator)
     if (!operator) {
       throw createError.NotFound("اپراتور پیدا نشد");
     }

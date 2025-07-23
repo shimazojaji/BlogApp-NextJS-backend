@@ -4,7 +4,9 @@ const { GuestModel } = require("../../models/guest");
 const { addGuestSchema } = require("../validators/guest/guest.schema");
 const mongoose = require("mongoose");
 
-
+const Kavenegar = require("kavenegar");
+const { findHostelById } = require("./hostel.controller");
+const { findHostById } = require("./host.controller");
 // Get list of guests
 const getListOfGuests = async (req, res, next) => {
   try {
@@ -24,6 +26,7 @@ const getListOfGuests = async (req, res, next) => {
 
 // Add a new guest
 const addNewGuest = async (req, res, next) => {
+  console.log(req.body)
   try {
     await addGuestSchema.validateAsync(req.body);
 
@@ -33,7 +36,7 @@ const addNewGuest = async (req, res, next) => {
 
     const guest = await GuestModel.create(req.body);
 
-    
+
     res.status(HttpStatus.CREATED).json({
       statusCode: HttpStatus.CREATED,
       message: "اطلاعات میزبان با موفقیت ثبت شد",
@@ -89,12 +92,14 @@ const updateGuest = async (req, res, next) => {
   try {
     const { id } = req.params;
     await findGuestById(id);
-
+    const { mobile, namefamily, operatorName, hostel, host, eskanType } = req.body;
+    // console.log(operatorName.at(-1))
+    await sendMessage(mobile, namefamily, operatorName.at(-1), hostel, host, eskanType)
     const data = { ...req.body };
 
     const updateResult = await GuestModel.updateOne(
       { _id: id },
-      { $set: data },       { new: true }
+      { $set: data }, { new: true }
     );
 
     if (!updateResult.modifiedCount) {
@@ -127,7 +132,7 @@ const getGuestById = async (req, res, next) => {
   }
 };
 // 
-const getAllGuest= async (req, res, next) => {
+const getAllGuest = async (req, res, next) => {
   try {
     const all = await GuestModel.find().sort({ createdAt: -1 });
     res.json({ data: all });
@@ -166,11 +171,11 @@ const getAllGuest= async (req, res, next) => {
 //   }
 // };
 
-const changeStatus=async(req, res) =>{
+const changeStatus = async (req, res) => {
   const { id: guestId } = req.params;
 
-  // مرحله‌ای: accepted -> entered -> exited
-  const statusFlow = ["accepted", "entered", "exited"];
+  // مرحله‌ای: inWay -> entered -> exited
+  const statusFlow = ["inWay", "entered", "exited"];
 
   // پیدا کردن مهمان
   const guest = await GuestModel.findById(guestId);
@@ -181,7 +186,6 @@ const changeStatus=async(req, res) =>{
   }
 
   const currentStatusIndex = statusFlow.indexOf(guest.status);
-
   if (currentStatusIndex === -1) {
     return res.status(400).json({
       message: "وضعیت فعلی زائر نامعتبر است.",
@@ -197,7 +201,31 @@ const changeStatus=async(req, res) =>{
 
   // تعیین وضعیت بعدی
   const nextStatus = statusFlow[currentStatusIndex + 1];
+  if (nextStatus === "exited") {
+    const sender = "9982003208";
+    const receptor = guest.mobile;
+    let message = `زائر ارجمند ${guest.namefamily}\n  سپاس از اینکه لالجین، دیار خادمان اربعین، را برای اقامت برگزیدید.\n اگر فرصت دارید، حتما از لالجین، شهر جهانی سفال، دیدن کنید و هنر ناب این سرزمین را به یادگار ببرید.`;
+    // const link = "https://nshn.ir/7b719uO5DglA";
 
+    if (!process.env.KAVENEGAR_API_KEY) {
+      console.error("KAVENEGAR_API_KEY is not defined");
+      return;
+    }
+
+    const api = Kavenegar.KavenegarApi({ apikey: process.env.KAVENEGAR_API_KEY });
+    try {
+      api.Send({
+        message,
+        sender,
+        receptor
+      }, function (response, status) {
+        console.log("SMS Response:", response);
+        console.log("SMS Status:", status);
+      });
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+    }
+  }
   // بروزرسانی در دیتابیس
   const updateResult = await GuestModel.updateOne(
     { _id: guestId },
@@ -253,6 +281,58 @@ const servicedGuest = async (req, res) => {
   });
 };
 
+
+// Send Message with kavenegar
+const sendMessage = async (mobile, namefamily, registerOperator, hotelId = "", hostId = "", eskanType = "") => {
+  const sender = "9982003208";
+  const receptor = mobile;
+  let message = "";
+  const link = "https://nshn.ir/7b719uO5DglA";
+
+  if (!process.env.KAVENEGAR_API_KEY) {
+    console.error("KAVENEGAR_API_KEY is not defined");
+    return;
+  }
+
+  const api = Kavenegar.KavenegarApi({ apikey: process.env.KAVENEGAR_API_KEY });
+  // console.log(registerOperator)
+  switch (registerOperator) {
+    case "زائر":
+    case "بهار":
+    case "لالجین":
+      message = `زائر ارجمند ${namefamily}:\n ثبت نام شما با موفقیت انجام شد\n📍موقعیت محل پذیرش:\n${link}\n  پیش از ورود، همکاران ما برای هماهنگی با شما تماس خواهند گرفت.\n ستاد #مردمی اربعین لالجین`;
+      break;
+    case "پذیرش تلفنی":
+      let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hotelId) : host = await findHostById(hostId)
+      if (host) {
+        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
+ستاد #مردمی اربعین لالجین `
+      }
+      else if (hostel) {
+        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.address}\n
+ستاد #مردمی اربعین لالجین `
+      }
+
+      break;
+    default:
+      console.log("no operator name")
+
+  }
+
+  try {
+    api.Send({
+      message,
+      sender,
+      receptor
+    }, function (response, status) {
+      console.log("SMS Response:", response);
+      console.log("SMS Status:", status);
+    });
+  } catch (error) {
+    console.error("Error sending SMS:", error);
+  }
+};
+
 // Exports
 module.exports = {
   addNewGuest,
@@ -261,5 +341,5 @@ module.exports = {
   removeGuest,
   updateGuest,
   getGuestById,
-  changeStatus,servicedGuest
+  changeStatus, servicedGuest, sendMessage
 };

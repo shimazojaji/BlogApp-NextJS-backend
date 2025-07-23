@@ -9,8 +9,11 @@ const GuestSchema = new mongoose.Schema({
   city: { type: String, default: "نامشخص" },
   startDate: { type: String, default: new Date() },
   status: { type: String, default: "pending" },
-  hostel: { type: String, default: "unknown" },
-  hostelAddress: { type: String ,default:"unknown"},
+  hostel: { type: mongoose.Schema.Types.ObjectId, ref: 'Hostel' },
+    host: { type: mongoose.Schema.Types.ObjectId, ref: 'Host' },
+
+  // hostel: { type: String, default: "unknown" },
+  eskanType: { type: String ,default:"unknown"},
   isNeedDrug: { type: Boolean, default: false },
   isNeedMedicine: { type: Boolean, default: false },
   isNeedFood: { type: Boolean, default: false },

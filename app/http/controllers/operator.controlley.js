@@ -125,11 +125,49 @@ const getOperatorById = async (req, res, next) => {
     next(err);
   }
 };
+// کنترلر تغییر نام  اپراتور
+const hostelChange = async (req, res, next) => {
+  try {
+    /* 1) پارامترها */
+    const { id: operatorId } = req.params;
+    const { hostelName } = req.body;          // فقط hostelName را می‌گیریم
+
+    /* 2) اعتبارسنجی ورودی */
+    if (!hostelName || typeof hostelName !== "string") {
+      throw createHttpError.BadRequest("آدرس اسکان  معتبر نیست");
+    }
+
+    /* 3) بررسی وجود اپراتور */
+    const operator = await OperatorModel.findById(operatorId);
+    if (!operator) {
+      throw createHttpError.NotFound("اپراتور یافت نشد");
+    }
+
+    /* 4) به‌روزرسانی */
+    const { modifiedCount } = await OperatorModel.updateOne(
+      { _id: operatorId },
+      { $set: { hostelName } }
+    );
+
+    if (modifiedCount === 0) {
+      throw createHttpError.BadRequest("عملیات ناموفق بود");
+    }
+
+    /* 5) پاسخ موفق */
+    return res.status(200).json({
+      statusCode: 200,
+      data: { message: "اپراتور اسکان  با موفقیت به‌روزرسانی شد" },
+    });
+  } catch (err) {
+    /* 6) ارسال خطا به middleware مرکزی خطاها */
+    next(err);
+  }
+};
 
 
 // Exports
 module.exports = {
   getOperators,
   addOperator,
-  removeOperator, updateOprator,getOperatorById
+  removeOperator, updateOprator,getOperatorById,hostelChange
 };

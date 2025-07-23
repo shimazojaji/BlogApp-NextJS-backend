@@ -28,7 +28,9 @@ const addGuestSchema = Joi.object({
   statusChangedAt: Joi.date().iso().optional(),
 
   hostel: Joi.string().optional(),
-  hostelAddress: Joi.string().optional(),
+    host: Joi.string().optional(),
+
+  eskanType: Joi.string().optional(),
 
   isNeedDrug: Joi.boolean().optional(),
   isNeedMedicine: Joi.boolean().optional(),

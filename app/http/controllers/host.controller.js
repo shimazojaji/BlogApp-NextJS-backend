@@ -245,5 +245,5 @@ const medicalService = async (req, res) => {
 };
 module.exports = {
   addNewHost,
-  getListOfHosts, removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService
+  getListOfHosts, removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService,findHostById
 };

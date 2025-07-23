@@ -15,7 +15,7 @@ async function validateFullOperatorSchema(data) {
       .error(createHttpError.BadRequest("نام و نام خانوادگی را به درستی وارد کنید")),
     operatorStatus: Joi.string().optional(),
     // operatorOperation: Joi.array().items(Joi.string()).optional(),
-    hostelName: Joi.string().optional()
+    hostelID: Joi.string().optional()
   });
 
   return await Operatorschema.validateAsync(data);

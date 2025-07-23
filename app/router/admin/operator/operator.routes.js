@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { verifyAccessToken, decideAuthMiddleware } = require("../../../http/middlewares/auth.middleware");
 const expressAsyncHandler = require("express-async-handler");
-const { addOperator, getOperators, removeOperator, updateOprator, getOperatorById } = require("../../../http/controllers/operator.controlley");
+const { addOperator, getOperators, removeOperator, updateOprator, getOperatorById, hostelChange } = require("../../../http/controllers/operator.controlley");
 
 
 // POST /operator/add - Create new entry
@@ -20,5 +20,9 @@ router.get("/list", verifyAccessToken, expressAsyncHandler(getOperators))
 router.delete("/remove/:id", verifyAccessToken, expressAsyncHandler(removeOperator));
 router.patch("/update/:id", verifyAccessToken, expressAsyncHandler(updateOprator));
 router.get("/:id", decideAuthMiddleware, expressAsyncHandler(getOperatorById));
-
+router.post(
+    "/hostelChange/:id",
+    verifyAccessToken,
+    expressAsyncHandler(hostelChange)
+);
 module.exports = router;
