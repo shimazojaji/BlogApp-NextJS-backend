@@ -94,7 +94,6 @@ const updateGuest = async (req, res, next) => {
     await findGuestById(id);
     const { mobile, namefamily, operatorName, hostel, host, eskanType } = req.body;
     // console.log(operatorName.at(-1))
-    await sendMessage(mobile, namefamily, operatorName.at(-1), hostel, host, eskanType)
     const data = { ...req.body };
 
     const updateResult = await GuestModel.updateOne(
@@ -105,6 +104,8 @@ const updateGuest = async (req, res, next) => {
     if (!updateResult.modifiedCount) {
       throw new createHttpError.InternalServerError("به روزرسانی پست انجام نشد");
     }
+    await sendMessage(mobile, namefamily, operatorName.at(-1), hostel, host, eskanType)
+
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
@@ -299,17 +300,19 @@ const sendMessage = async (mobile, namefamily, registerOperator, hotelId = "", h
   switch (registerOperator) {
     case "زائر":
     case "بهار":
-    case "لالجین":
+    case "ادمین":
       message = `زائر ارجمند ${namefamily}:\n ثبت نام شما با موفقیت انجام شد\n📍موقعیت محل پذیرش:\n${link}\n  پیش از ورود، همکاران ما برای هماهنگی با شما تماس خواهند گرفت.\n ستاد #مردمی اربعین لالجین`;
       break;
     case "پذیرش تلفنی":
+    case "لالجین":
+
       let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hotelId) : host = await findHostById(hostId)
       if (host) {
         message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
 ستاد #مردمی اربعین لالجین `
       }
       else if (hostel) {
-        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.address}\n
+        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما : ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.location}\n
 ستاد #مردمی اربعین لالجین `
       }
 

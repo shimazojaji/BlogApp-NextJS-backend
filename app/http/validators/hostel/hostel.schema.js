@@ -22,6 +22,7 @@ async function validateHostelSchema(data) {
     operatorId: Joi.string().required()
       .error(createHttpError.BadRequest("نام اپراتور اسکان الزامی است    ")),
     bathroomStatus: Joi.boolean().optional(),
+    location:Joi.string().optional()
   });
 
   return await HostelSchema.validateAsync(data);

@@ -6,7 +6,7 @@ const HostSchema = new mongoose.Schema({
     maleNo: { type: Number, required: true },
     femaleNo: { type: Number, required: true },
     mobile: { type: String, required: true, unique: true },
-
+location:{type:String,default:"unknown"},
     isFood: { type: Boolean, default: false },
     isMedical: { type: Boolean, default: false },
     isBath: { type: Boolean, default: true },

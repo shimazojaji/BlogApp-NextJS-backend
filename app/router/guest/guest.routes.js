@@ -15,12 +15,12 @@ router.post("/add", async (req, res, next) => {
     await addGuestSchema.validateAsync(req.body);
     // console.log(req.body)
     const { mobile, registerOperator, namefamily } = req.body;
-    await sendMessage(mobile, namefamily, registerOperator)
-   
+
+
     const exists = await GuestModel.findOne({ mobile });
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلا ثبت شده است");
     const guest = await GuestModel.create(req.body);
-
+    await sendMessage(mobile, namefamily, registerOperator)
 
 
     res.status(HttpStatus.CREATED).json({

@@ -6,10 +6,12 @@ async function validateFullOperatorSchema(data) {
     mobile: Joi.string().pattern(/^09\d{9}$/).required()
       .error(createHttpError.BadRequest("شماره موبایل باید با فرمت صحیح وارد شود")),
 
-    code: Joi.string().pattern(/^3\d{9}$/).required()
+    code: Joi.string().length(10)
+      .pattern(/^\d+$/) // Matches exactly 10 digits
+      .required()
       .error(createHttpError.BadRequest("کد ملی باید با فرمت صحیح وارد شود")),
 
-    role: Joi.string().valid("bahar", "lalejin", "phone", "eskan", "service", "nazer", "tadarok").required()
+    role: Joi.string().valid("bahar", "lalejin", "phone", "eskan", "service", "nazer", "tadarok", "private").required()
       .error(createHttpError.BadRequest("نقش کاربر نامعتبر است")),
     name: Joi.string().min(5).max(100).required()
       .error(createHttpError.BadRequest("نام و نام خانوادگی را به درستی وارد کنید")),
@@ -26,7 +28,8 @@ async function validatePartialOperatorSchema(data) {
     mobile: Joi.string().pattern(/^09\d{9}$/).required()
       .error(createHttpError.BadRequest("نام کاربری   باید   صحیح وارد شود")),
 
-    code: Joi.string().pattern(/^3\d{9}$/).required()
+    code: Joi.string().length(10)
+      .pattern(/^\d+$/) // Matches exactly 10 digits.required()
       .error(createHttpError.BadRequest("رمز عبور  باید   صحیح وارد شود")),
   });
 

@@ -8,13 +8,13 @@ const addGuestSchema = Joi.object({
   mobile: Joi.string().pattern(/^09\d{9}$/).required()
     .error(createHttpError.BadRequest("موبایل را به درستی وارد کنید")),
 
-  maleNo: Joi.number().greater(-1).less(101).required()
+  maleNo: Joi.number().greater(-1).required()
     .error(createHttpError.BadRequest("تعداد نفرات آقا را به درستی وارد کنید")),
 
-  femaleNo: Joi.number().greater(-1).less(101).required()
+  femaleNo: Joi.number().greater(-1).required()
     .error(createHttpError.BadRequest("تعداد نفرات خانم را به درستی وارد کنید")),
 
-  childNo: Joi.number().greater(-1).less(101).required()
+  childNo: Joi.number().greater(-1).required()
     .error(createHttpError.BadRequest("تعداد کودکان را به درستی وارد کنید")),
 
   city: Joi.string().optional()
