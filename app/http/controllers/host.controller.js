@@ -3,6 +3,8 @@ const { StatusCodes: HttpStatus } = require("http-status-codes");
 const { HostModel } = require("../../models/host");
 const { addHostSchema } = require("../validators/host/host.schema");
 const { default: mongoose } = require("mongoose");
+const Kavenegar = require("kavenegar");
+
 // const dbConnect=require("../../lib/dbconnect")
 /**
  * دریافت لیست همه میزبان‌ها با امکان فیلتر کردن
@@ -25,21 +27,51 @@ const getListOfHosts = async (req, res, next) => {
 const addNewHost = async (req, res, next) => {
   try {
     await addHostSchema.validateAsync(req.body);
+        const { mobile, namefamily } = req.body;
 
     const exists = await HostModel.findOne({ mobile: req.body.mobile });
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلاً ثبت شده است");
 
     const host = await HostModel.create(req.body);
-
+await sendMessage(mobile, namefamily)
     res.status(HttpStatus.CREATED).json({
       statusCode: HttpStatus.CREATED,
       message: "اطلاعات میزبان با موفقیت ثبت شد",
       data: host,
     });
+    
   } catch (err) {
     next(err);
   }
 };
+
+const sendMessage = async (mobile, namefamily) => {
+  const sender = "9982003208";
+  const receptor = mobile;
+  let message = `میزبان گرامی : ${namefamily}  \n از ثبت‌نام شما در سامانه ضریح برای میزبانی زائران اربعین سپاسگزاریم.\n ثبت‌نام اولیه شما با موفقیت انجام شد .\n طی روزهای آتی، جهت هماهنگی‌ و بررسی نهایی با شما تماس گرفته خواهد شد.\n  |  لالجین میزبان اربعینی‌ها | \n ستاد #مردمی اربعین لالجین`;
+
+  if (!process.env.KAVENEGAR_API_KEY) {
+    console.error("KAVENEGAR_API_KEY is not defined");
+    return;
+  }
+
+  const api = Kavenegar.KavenegarApi({ apikey: process.env.KAVENEGAR_API_KEY });
+
+
+  try {
+    api.Send({
+      message,
+      sender,
+      receptor
+    }, function (response, status) {
+      console.log("SMS Response:", response);
+      console.log("SMS Status:", status);
+    });
+  } catch (error) {
+    console.error("Error sending SMS:", error);
+  }
+};
+
 const removeHost = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -103,9 +135,9 @@ const decreaseGuestNo = async (req, res, next) => {
   const { id } = req.params;
   // console.log(req.body)
   // const amount = parseInt(req.body.amount, 10);
- const  maleNo = parseInt(req.body.maleNo, 10);
-  const  femaleNo  = parseInt(req.body.femaleNo, 10);
-  console.log(maleNo, femaleNo)
+  const maleNo = parseInt(req.body.maleNo, 10);
+  const femaleNo = parseInt(req.body.femaleNo, 10);
+  // console.log(maleNo, femaleNo)
   if (isNaN(maleNo) || isNaN(femaleNo)) {
     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
   }
@@ -113,8 +145,12 @@ const decreaseGuestNo = async (req, res, next) => {
   try {
     const result = await HostModel.updateOne(
       { _id: id },
-       { $inc: { maleNo: -maleNo } },
-      { $inc: { femaleNo: -femaleNo } }
+      {
+        $inc: {
+          maleNo: -maleNo,
+          femaleNo: -femaleNo
+        }
+      }
 
     );
 
@@ -124,6 +160,41 @@ const decreaseGuestNo = async (req, res, next) => {
 
     return res.status(200).json({
       message: "ظرفیت با موفقیت کاهش یافت",
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+const increaseGuestNo = async (req, res, next) => {
+  const { id } = req.params;
+  // const amount = parseInt(req.body.amount, 10);
+  const maleNo = parseInt(req.body.maleNo, 10);
+  const femaleNo = parseInt(req.body.femaleNo, 10);
+  // console.log(maleNo, femaleNo)
+  if (isNaN(maleNo) || isNaN(femaleNo)) {
+    return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
+  }
+
+  try {
+    const result = await HostModel.updateOne(
+      { _id: id }, {
+      $inc: {
+        maleNo: maleNo,
+        femaleNo: femaleNo
+      }
+    }
+
+
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "اسکان یافت نشد" });
+    }
+
+    return res.status(200).json({
+      message: "ظرفیت با موفقیت افزایش یافت",
     });
   } catch (err) {
     console.error(err);
@@ -245,5 +316,5 @@ const medicalService = async (req, res) => {
 };
 module.exports = {
   addNewHost,
-  getListOfHosts, removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService,findHostById
+  getListOfHosts, removeHost, decreaseGuestNo, updateHost, getHostById, foodService, medicalService, findHostById, increaseGuestNo, sendMessage
 };

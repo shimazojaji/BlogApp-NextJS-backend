@@ -125,8 +125,10 @@ const decreaseCapacity = async (req, res, next) => {
   try {
     const result = await HostelModel.updateOne(
       { _id: id },
-      { $inc: { maleNo: -maleNo } },
-      { $inc: { femaleNo: -femaleNo } }
+      {$inc: {
+        maleNo: -maleNo,
+        femaleNo: -femaleNo
+      }}
 
     );
 
@@ -142,7 +144,40 @@ const decreaseCapacity = async (req, res, next) => {
     next(err);
   }
 };
+const increaseCapacity = async (req, res, next) => {
+  const { id } = req.params;
+  // const amount = parseInt(req.body.amount, 10);
+  const maleNo = parseInt(req.body.maleNo, 10);
+  const femaleNo = parseInt(req.body.femaleNo, 10);
+  // console.log(maleNo, femaleNo)
+  if (isNaN(maleNo) || isNaN(femaleNo)) {
+    return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
+  }
 
+  try {
+    const result = await HostelModel.updateOne(
+      { _id: id }, {
+      $inc: {
+        maleNo: maleNo,
+        femaleNo: femaleNo
+      }
+    }
+
+
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "اسکان یافت نشد" });
+    }
+
+    return res.status(200).json({
+      message: "ظرفیت با موفقیت افزایش یافت",
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
 
 // Get hostel by ID
 const getHostelById = async (req, res, next) => {
@@ -230,5 +265,5 @@ const medicalService = async (req, res) => {
 };
 // Exports
 module.exports = {
-  getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity, foodService, medicalService, findHostelById
+  getHostels, addHostel, removeHostel, updateHostel, getHostelById, decreaseCapacity, foodService, medicalService, findHostelById, increaseCapacity
 }
