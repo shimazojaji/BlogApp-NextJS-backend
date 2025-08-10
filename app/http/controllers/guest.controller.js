@@ -74,7 +74,7 @@ const removeGuest = async (req, res, next) => {
 // Find guest by ID
 const findGuestById = async (id) => {
   if (!mongoose.isValidObjectId(id)) {
-    throw createHttpError.BadRequest("شناسه پست نامعتبر است");
+    throw createHttpError.BadRequest(" شناسه زائر نا معتبر است   ");
   }
 
   const guest = await GuestModel.findById(id);
@@ -92,7 +92,7 @@ const updateGuest = async (req, res, next) => {
   try {
     const { id } = req.params;
     await findGuestById(id);
-    const { mobile, namefamily, operatorName, hostel, host, eskanType } = req.body;
+    // const { mobile, namefamily, operatorName, hostel, host, eskanType } = req.body;
     // console.log(operatorName.at(-1))
     const data = { ...req.body };
 
@@ -102,21 +102,86 @@ const updateGuest = async (req, res, next) => {
     );
 
     if (!updateResult.modifiedCount) {
-      throw new createHttpError.InternalServerError("به روزرسانی پست انجام نشد");
+      throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
     }
-    await sendMessage(mobile, namefamily, operatorName.at(-1), hostel, host, eskanType)
+    // await sendMessage(mobile, namefamily, operatorName.at(-1), hostel, host, eskanType)
 
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
-        message: "به روزرسانی زائر با موفقیت انجام شد",
+        message: "به روزرسانی  با موفقیت انجام شد",
       },
     });
   } catch (err) {
     next(err);
   }
 };
+
+
+// Update while printing
+const updatePrintGuest = async (req, res, next) => {
+
+  try {
+    const { id } = req.params;
+    const { mobile, namefamily, hostel, host, eskanType } = req.body;
+
+    await findGuestById(id);
+    const data = { ...req.body };
+
+    const updateResult = await GuestModel.updateOne(
+      { _id: id },
+      { $set: data }, { new: true }
+    );
+
+    if (!updateResult.modifiedCount) {
+      throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
+    }
+          await sendMessagePrint(mobile, namefamily,  hostel, host, eskanType);
+
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روزرسانی  با موفقیت انجام شد",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// set arrival time 
+const setTimeGuest = async (req, res, next) => {
+
+  try {
+    const { id } = req.params;
+    await findGuestById(id);
+    const { iso } = { ...req.body };
+    // console.log(iso)
+    const updateResult = await GuestModel.updateOne(
+      { _id: id },
+      { $set: { arrivalTime: iso } }
+
+    );
+
+    if (!updateResult.modifiedCount) {
+      throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
+    }
+
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روزرسانی  با موفقیت انجام شد",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 
 // Get guest by ID
 const getGuestById = async (req, res, next) => {
@@ -205,7 +270,8 @@ const changeStatus = async (req, res) => {
   if (nextStatus === "exited") {
     const sender = "9982003208";
     const receptor = guest.mobile;
-    let message = `زائر ارجمند ${guest.namefamily}\n  سپاس از اینکه لالجین، دیار خادمان اربعین، را برای اقامت برگزیدید.\n اگر فرصت دارید، حتما از لالجین، شهر جهانی سفال، دیدن کنید و هنر ناب این سرزمین را به یادگار ببرید.`;
+    const link = "https://survey.porsline.ir/s/7CA6H4iC";
+    let message = `زائر ارجمند ${guest.namefamily}\n  سپاس از اینکه لالجین، دیار خادمان اربعین، را برای اقامت برگزیدید.\n اگر فرصت دارید، حتما از لالجین، شهر جهانی سفال، دیدن کنید و هنر ناب این سرزمین را به یادگار ببرید.\n  لطفا با پاسخ به نظر سنجی زیر ما را در خدمات  بهتر یاری فرمایید:\n ${link} `;
     // const link = "https://nshn.ir/7b719uO5DglA";
 
     if (!process.env.KAVENEGAR_API_KEY) {
@@ -263,7 +329,7 @@ const servicedGuest = async (req, res) => {
     {
       $set: {
         isServiced: newStatus,
-        statusChangedAt: new Date(),
+        // statusChangedAt: new Date(),
       },
     }
   );
@@ -284,45 +350,46 @@ const servicedGuest = async (req, res) => {
 
 
 // Send Message with kavenegar
-const sendMessage = async (mobile, namefamily, registerOperator, hotelId = "", hostId = "", eskanType = "") => {
+const sendMessage = async (mobile, namefamily) => {
   const sender = "9982003208";
   const receptor = mobile;
-  let message = "";
-  const link = "https://nshn.ir/7b719uO5DglA";
+    const link = "https://nshn.ir/7b719uO5DglA";
 
+  const message = `زائر ارجمند ${namefamily}:\n ثبت نام شما با موفقیت انجام شد\n📍موقعیت محل پذیرش:\n${link}\n  پیش از ورود، همکاران ما برای هماهنگی با شما تماس خواهند گرفت.\n ستاد #مردمی اربعین لالجین`;
+// console.log(sender,receptor,message)
   if (!process.env.KAVENEGAR_API_KEY) {
     console.error("KAVENEGAR_API_KEY is not defined");
     return;
   }
 
   const api = Kavenegar.KavenegarApi({ apikey: process.env.KAVENEGAR_API_KEY });
-  // console.log(registerOperator)
-  switch (registerOperator) {
+  /* switch (registerOperator) {
     case "زائر":
     case "بهار":
-    case "ادمین":
-      message = `زائر ارجمند ${namefamily}:\n ثبت نام شما با موفقیت انجام شد\n📍موقعیت محل پذیرش:\n${link}\n  پیش از ورود، همکاران ما برای هماهنگی با شما تماس خواهند گرفت.\n ستاد #مردمی اربعین لالجین`;
-      break;
-    case "پذیرش تلفنی":
-    case "لالجین":
+    case "ادمین": */
+  // break;
+  /* case "پذیرش تلفنی":
+  case "لالجین":
 
-      let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hotelId) : host = await findHostById(hostId)
-      if (host) {
-        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
+    let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hostelId) : host = await findHostById(hostId)
+
+    if (host) {
+      message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
 ستاد #مردمی اربعین لالجین `
-      }
-      else if (hostel) {
-        message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما : ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.location}\n
+    }
+    else if (hostel) {
+      message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما : ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.location}\n
 ستاد #مردمی اربعین لالجین `
-      }
+    }
+    else {
+      throw new Error("میزبان یا محل اسکان یافت نشد");
+    }
 
-      break;
-    default:
-      console.log("no operator name")
+    break; */
 
-  }
+  // }
 
-  try {
+ /*   try {
     api.Send({
       message,
       sender,
@@ -333,7 +400,71 @@ const sendMessage = async (mobile, namefamily, registerOperator, hotelId = "", h
     });
   } catch (error) {
     console.error("Error sending SMS:", error);
+  }  */
+   return new Promise((resolve, reject) => {
+    api.Send({
+       message,
+       sender,
+       receptor
+     }, function (response, status) {
+      if (status !== 200) {
+        
+        reject(new Error("ارسال پیامک ناموفق بود"));
+      
+      } else {
+         resolve(response);
+      
+      }
+     });
+   });
+};
+
+// Send Message for print  with kavenegar
+const sendMessagePrint = async (mobile, namefamily, hostelId, hostId, eskanType) => {
+  // console.log(mobile, namefamily, registerOperator, hostelId, hostId,eskanType)
+  const sender = "9982003208";
+  const receptor = mobile;
+let message="";
+  if (!process.env.KAVENEGAR_API_KEY) {
+    console.error("KAVENEGAR_API_KEY is not defined");
+    return;
   }
+
+  const api = Kavenegar.KavenegarApi({ apikey: process.env.KAVENEGAR_API_KEY });
+
+
+  let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hostelId) : host = await findHostById(hostId)
+
+  if (host) {
+    message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
+ستاد #مردمی اربعین لالجین `
+  }
+  else if (hostel) {
+    message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \nمحل اسکان  شما : ${hostel.hostelName}\n 📍آدرس اسکان شما :${hostel.location}\n
+ستاد #مردمی اربعین لالجین `
+  }
+  else {
+    throw new Error("میزبان یا محل اسکان یافت نشد");
+  }
+
+
+
+  // }
+
+
+  return new Promise((resolve, reject) => {
+    api.Send({
+      message,
+      sender,
+      receptor
+    }, function (response, status) {
+      if (status !== 200) {
+        reject(new Error("ارسال پیامک ناموفق بود"));
+      } else {
+        resolve(response);
+      }
+    });
+  });
 };
 
 // Exports
@@ -344,5 +475,5 @@ module.exports = {
   removeGuest,
   updateGuest,
   getGuestById,
-  changeStatus, servicedGuest, sendMessage
+  changeStatus, servicedGuest, sendMessage, updatePrintGuest, setTimeGuest,sendMessagePrint
 };

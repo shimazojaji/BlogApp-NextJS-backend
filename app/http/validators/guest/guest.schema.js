@@ -24,14 +24,15 @@ const addGuestSchema = Joi.object({
     .error(createHttpError.BadRequest("تاریخ را به درستی وارد کنید")),
 
   // Optional fields (validate type only if provided)
-  status: Joi.string().valid("Pending", "accepted", "inWay", "entered", "exited").optional(),
+  status: Joi.string().valid("pending", "accepted", "inWay", "entered", "exited").optional(),
   statusChangedAt: Joi.date().iso().optional(),
 
   hostel: Joi.string().optional(),
-    host: Joi.string().optional(),
+  host: Joi.string().optional(),
 
   eskanType: Joi.string().optional(),
-
+  arrivalTime: Joi.string().optional(),
+  printTime: Joi.date().iso().optional(),
   isNeedDrug: Joi.boolean().optional(),
   isNeedMedicine: Joi.boolean().optional(),
   isNeedFood: Joi.boolean().optional(),

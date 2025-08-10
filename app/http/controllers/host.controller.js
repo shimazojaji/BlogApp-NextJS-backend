@@ -27,19 +27,19 @@ const getListOfHosts = async (req, res, next) => {
 const addNewHost = async (req, res, next) => {
   try {
     await addHostSchema.validateAsync(req.body);
-        const { mobile, namefamily } = req.body;
+    const { mobile, namefamily } = req.body;
 
     const exists = await HostModel.findOne({ mobile: req.body.mobile });
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلاً ثبت شده است");
 
     const host = await HostModel.create(req.body);
-await sendMessage(mobile, namefamily)
+    await sendMessage(mobile, namefamily)
     res.status(HttpStatus.CREATED).json({
       statusCode: HttpStatus.CREATED,
       message: "اطلاعات میزبان با موفقیت ثبت شد",
       data: host,
     });
-    
+
   } catch (err) {
     next(err);
   }
@@ -76,7 +76,6 @@ const removeHost = async (req, res, next) => {
   try {
     const { id } = req.params;
     await findHostById(id);
-
     const host = await HostModel.findByIdAndDelete(id);
     if (!host || !host._id) {
       throw createHttpError.InternalServerError("میزبان حذف نشد");

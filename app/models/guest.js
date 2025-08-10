@@ -12,7 +12,6 @@ const GuestSchema = new mongoose.Schema({
   hostel: { type: String, default: "unknown" },
   host: { type: String, default: "unknown" },
 
-  // hostel: { type: String, default: "unknown" },
   eskanType: { type: String, default: "unknown" },
   isNeedDrug: { type: Boolean, default: false },
   isNeedMedicine: { type: Boolean, default: false },
@@ -25,8 +24,10 @@ const GuestSchema = new mongoose.Schema({
   operatorName: [{ type: String }],
   userRole: { type: String, default: "USER" },
   comment: { type: String, default: "..." },
-  registerOperator: { type: String, default: "زائر" },
+  registerOperator: { type: String },
   registerType: { type: String, default: "online" },
+  arrivalTime:{type:String},
+  printTime:{type:Date},
 }, {
   timestamps: true,
 });
