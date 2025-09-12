@@ -7,7 +7,7 @@ const { intervalToDuration } = require("date-fns");
 const { GuestModel } = require("../models/guest");
 const { HostModel } = require("../models/host");
 const { ServerToguestModel } = require("../models/serverToguest");
-const { OperatorModel } = require("../models/user/operator");
+const { OperatorModel } = require("../models/operator");
 
 function deleteInvalidPropertyInObject(data = {}, blackListFields = []) {
   // let nullishData = ["", " ", "0", 0, null, undefined];
@@ -106,19 +106,19 @@ function VerifyRefreshToken(req) {
           if (err)
             reject(createError.Unauthorized("لطفا حساب کاربری خود شوید"));
           const { _id } = payload;
-          const user =( await OperatorModel.findById(_id, {
+          const user = (await OperatorModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,
-          }))|| ( await GuestModel.findById(_id, {
+          })) || (await GuestModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,
-          })) || ( await HostModel.findById(_id, {
+          })) || (await HostModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,
-          }))|| ( await ServerToguestModel.findById(_id, {
+          })) || (await ServerToguestModel.findById(_id, {
             password: 0,
             otp: 0,
             resetLink: 0,

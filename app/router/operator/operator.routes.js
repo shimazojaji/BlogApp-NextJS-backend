@@ -20,5 +20,9 @@ router.get("/list", verifyAccessToken, expressAsyncHandler(getOperators))
 router.delete("/remove/:id", verifyAccessToken, expressAsyncHandler(removeOperator));
 router.patch("/update/:id", verifyAccessToken, expressAsyncHandler(updateOprator));
 router.get("/:id", decideAuthMiddleware, expressAsyncHandler(getOperatorById));
-
+router.post(
+    "/hostelChange/:id",
+    verifyAccessToken,
+    expressAsyncHandler(hostelChange)
+);
 module.exports = router;

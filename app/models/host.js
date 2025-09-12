@@ -1,3 +1,4 @@
+const { required } = require("joi");
 const mongoose = require("mongoose");
 
 const HostSchema = new mongoose.Schema({
@@ -5,8 +6,10 @@ const HostSchema = new mongoose.Schema({
     address: { type: String, required: true },
     maleNo: { type: Number, required: true },
     femaleNo: { type: Number, required: true },
+    remainMaleNo:{type:Number,default:0},
+     remainFemaleNo:{type:Number,default:0},
     mobile: { type: String, required: true, unique: true },
-location:{type:String,default:"unknown"},
+    location: { type: String, default: "unknown" },
     isFood: { type: Boolean, default: false },
     isMedical: { type: Boolean, default: false },
     isBath: { type: Boolean, default: true },

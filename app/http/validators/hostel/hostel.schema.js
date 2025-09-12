@@ -15,14 +15,15 @@ async function validateHostelSchema(data) {
 
     /*   capacity: Joi.number().integer().min(1).max(10000).required()
         .error(createHttpError.BadRequest("ظرفیت اسکان الزامی است و باید عددی معتبر باشد")), */
-
+    remainMaleNo: Joi.number().greater(-1).optional(),
+    remainFemaleNo: Joi.number().greater(-1).optional(),
     foodStatus: Joi.boolean().optional()
       .error(createHttpError.BadRequest("وضعیت غذا باید بله یا خیر باشد")),
     isMedical: Joi.boolean().optional(),
     operatorId: Joi.string().required()
       .error(createHttpError.BadRequest("نام اپراتور اسکان الزامی است    ")),
     bathroomStatus: Joi.boolean().optional(),
-    location:Joi.string().optional()
+    location: Joi.string().optional()
   });
 
   return await HostelSchema.validateAsync(data);

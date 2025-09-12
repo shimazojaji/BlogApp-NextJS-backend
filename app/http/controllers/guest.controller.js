@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const Kavenegar = require("kavenegar");
 const { findHostelById } = require("./hostel.controller");
 const { findHostById } = require("./host.controller");
+const { HostelModel } = require("../../models/hostel");
+const { HostModel } = require("../../models/host");
 // Get list of guests
 const getListOfGuests = async (req, res, next) => {
   try {
@@ -51,14 +53,60 @@ const addNewGuest = async (req, res, next) => {
 
 // Remove a guest
 const removeGuest = async (req, res, next) => {
+  let CapacityModel;
+  let placeId;
   try {
     const { id } = req.params;
-    await findGuestById(id);
+   const guest= await findGuestById(id);
+  //  console.log(guest1)
+    if (guest.status === "inWay" || guest.status === "entered") {
+      if (guest.hostel && guest.hostel !== "unknown") {
+        CapacityModel = HostelModel;
+        placeId = guest.hostel;
+      } else if (guest.host && guest.host !== "unknown") {
+        CapacityModel = HostModel;
+        placeId = guest.host;
+      } else {
+        throw createHttpError.BadRequest("نوع محل اقامت معتبر نیست");
+      }
 
-    const guest = await GuestModel.findByIdAndDelete(id);
-    if (!guest || !guest._id) {
-      throw createHttpError.InternalServerError("زائر حذف نشد");
+      await CapacityModel.updateOne(
+        { _id: placeId },
+        {
+          $inc: {
+            remainMaleNo: guest.maleNo,
+            remainFemaleNo: guest.femaleNo + guest.childNo
+          }
+        }
+      );
     }
+  
+
+    const removedGuest = await GuestModel.findByIdAndDelete(id);
+
+    if (!removedGuest || !removedGuest._id) {
+      updatedPlace = await CapacityModel.findOneAndUpdate(
+        {
+          _id: placeId,
+          remainMaleNo: { $gte: removedGuest.maleNo },
+          remainFemaleNo: { $gte: removedGuest.femaleNo + removedGuest.childNo }
+        },
+        {
+          $inc: {
+            remainMaleNo: -removedGuest.maleNo,
+            remainFemaleNo: -(removedGuest.femaleNo +removedGuest.childNo)
+          }
+        },
+        { new: true }
+      );
+
+      if (!updatedPlace) {
+        throw createHttpError.BadRequest("ظرفیت کافی وجود ندارد");
+      }
+      throw createHttpError.InternalServerError("زائر حذف نشد");
+
+    }
+
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
@@ -117,6 +165,106 @@ const updateGuest = async (req, res, next) => {
     next(err);
   }
 };
+//UodateForTel
+const updateGuestTel = async (req, res, next) => {
+
+  try {
+    const { id } = req.params;
+    await findGuestById(id);
+
+    const data = { ...req.body };
+    const {
+
+      host,
+      hostel,
+      maleNo,
+      femaleNo,
+      childNo
+    } = req.body;
+    let CapacityModel;
+    let placeId;
+    // let updatePlace;
+    try {
+      const updateResult = await GuestModel.updateOne(
+        { _id: id },
+        { $set: data }, { new: true }
+      );
+
+      if (!updateResult.modifiedCount) {
+        throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
+      }
+
+      //  انتخاب مدل ظرفیت بر اساس نوع مکان
+
+      if (hostel && hostel !== "unknown") {
+        CapacityModel = HostelModel;
+        placeId = hostel;
+      } else if (host && host !== "unknown") {
+        CapacityModel = HostModel;
+        placeId = host;
+      } else {
+        throw createHttpError.BadRequest("نوع محل اقامت معتبر نیست");
+      }
+      // ۱. کاهش ظرفیت با شرط اتمیک
+      updatedPlace = await CapacityModel.findOneAndUpdate(
+        {
+          _id: placeId,
+          remainMaleNo: { $gte: maleNo },
+          remainFemaleNo: { $gte: femaleNo + childNo }
+        },
+        {
+          $inc: {
+            remainMaleNo: -maleNo,
+            remainFemaleNo: -(femaleNo + childNo)
+          }
+        },
+        { new: true }
+      );
+
+      if (!updatedPlace) {
+        throw createHttpError.BadRequest("ظرفیت کافی وجود ندارد");
+      }
+    } catch (err) {
+      await CapacityModel.updateOne(
+        { _id: placeId },
+        {
+          $inc: {
+            remainMaleNo: maleNo,
+            remainFemaleNo: femaleNo + childNo
+          }
+        }
+      );
+      const updateResult = await GuestModel.updateOne(
+        { _id: id },
+        {
+          $set: {
+            host: "",
+            hostel: ""
+          }
+        }, { new: true }
+      );
+
+      if (!updateResult.modifiedCount) {
+        throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
+      }
+      throw err;
+    }
+
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روزرسانی  با موفقیت انجام شد",
+        data: {
+          remainMaleNo: updatedPlace.remainMaleNo,
+          remainFemaleNo: updatedPlace.remainFemaleNo
+        }
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 // Update while printing
@@ -137,7 +285,7 @@ const updatePrintGuest = async (req, res, next) => {
     if (!updateResult.modifiedCount) {
       throw new createHttpError.InternalServerError("به روزرسانی  انجام نشد");
     }
-          await sendMessagePrint(mobile, namefamily,  hostel, host, eskanType);
+    await sendMessagePrint(mobile, namefamily, hostel, host, eskanType);
 
 
     return res.status(HttpStatus.OK).json({
@@ -353,10 +501,10 @@ const servicedGuest = async (req, res) => {
 const sendMessage = async (mobile, namefamily) => {
   const sender = "9982003208";
   const receptor = mobile;
-    const link = "https://nshn.ir/7b719uO5DglA";
+  const link = "https://nshn.ir/7b719uO5DglA";
 
   const message = `زائر ارجمند ${namefamily}:\n ثبت نام شما با موفقیت انجام شد\n📍موقعیت محل پذیرش:\n${link}\n  پیش از ورود، همکاران ما برای هماهنگی با شما تماس خواهند گرفت.\n ستاد #مردمی اربعین لالجین`;
-// console.log(sender,receptor,message)
+  // console.log(sender,receptor,message)
   if (!process.env.KAVENEGAR_API_KEY) {
     console.error("KAVENEGAR_API_KEY is not defined");
     return;
@@ -370,9 +518,9 @@ const sendMessage = async (mobile, namefamily) => {
   // break;
   /* case "پذیرش تلفنی":
   case "لالجین":
-
+ 
     let hostel; let host; eskanType === "public" ? hostel = await findHostelById(hostelId) : host = await findHostById(hostId)
-
+ 
     if (host) {
       message = `زائر ارجمند ${namefamily}:\n به شهر لالجین خوش آمدید \n 💒 میزبان شما ${host.namefamily}\nهماهنگی‌های لازم با میزبان انجام شده است. خادمین، شما را تا محل اسکان همراهی میکنند.
 ستاد #مردمی اربعین لالجین `
@@ -384,39 +532,39 @@ const sendMessage = async (mobile, namefamily) => {
     else {
       throw new Error("میزبان یا محل اسکان یافت نشد");
     }
-
+ 
     break; */
 
   // }
 
- /*   try {
+  /*   try {
+     api.Send({
+       message,
+       sender,
+       receptor
+     }, function (response, status) {
+       console.log("SMS Response:", response);
+       console.log("SMS Status:", status);
+     });
+   } catch (error) {
+     console.error("Error sending SMS:", error);
+   }  */
+  return new Promise((resolve, reject) => {
     api.Send({
       message,
       sender,
       receptor
     }, function (response, status) {
-      console.log("SMS Response:", response);
-      console.log("SMS Status:", status);
-    });
-  } catch (error) {
-    console.error("Error sending SMS:", error);
-  }  */
-   return new Promise((resolve, reject) => {
-    api.Send({
-       message,
-       sender,
-       receptor
-     }, function (response, status) {
       if (status !== 200) {
-        
+
         reject(new Error("ارسال پیامک ناموفق بود"));
-      
+
       } else {
-         resolve(response);
-      
+        resolve(response);
+
       }
-     });
-   });
+    });
+  });
 };
 
 // Send Message for print  with kavenegar
@@ -424,7 +572,7 @@ const sendMessagePrint = async (mobile, namefamily, hostelId, hostId, eskanType)
   // console.log(mobile, namefamily, registerOperator, hostelId, hostId,eskanType)
   const sender = "9982003208";
   const receptor = mobile;
-let message="";
+  let message = "";
   if (!process.env.KAVENEGAR_API_KEY) {
     console.error("KAVENEGAR_API_KEY is not defined");
     return;
@@ -474,6 +622,7 @@ module.exports = {
   getAllGuest,
   removeGuest,
   updateGuest,
+  updateGuestTel,
   getGuestById,
-  changeStatus, servicedGuest, sendMessage, updatePrintGuest, setTimeGuest,sendMessagePrint
+  changeStatus, servicedGuest, sendMessage, updatePrintGuest, setTimeGuest, sendMessagePrint
 };

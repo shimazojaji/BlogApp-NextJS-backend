@@ -17,7 +17,8 @@ const addHostSchema = Joi.object({
 
   femaleNo: Joi.number().greater(-1).less(101).required()
     .error(createHttpError.BadRequest("تعداد نفرات خانم را به درستی وارد کنید")),
-
+  remainMaleNo: Joi.number().optional(),
+  remainFemaleNo: Joi.number().optional(),
   isFood: Joi.boolean().optional(),
   isMedical: Joi.boolean().optional(),
   isBath: Joi.boolean().optional(),

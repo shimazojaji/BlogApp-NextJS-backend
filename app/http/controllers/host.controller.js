@@ -129,59 +129,91 @@ const findHostById = async (id) => {
 //     next(err);
 //   }
 // };
+// const decreaseGuestNo = async (req, res, next) => {
+//   // await addHostSchema.validateAsync(req.body);
+//   const { id } = req.params;
+//   // console.log(req.body)
+//   // const amount = parseInt(req.body.amount, 10);
+//   const maleNo = parseInt(req.body.maleNo, 10);
+//   const femaleNo = parseInt(req.body.femaleNo, 10);
+//   if (isNaN(maleNo) || isNaN(femaleNo)) {
+//     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
+//   }
+
+//   try {
+//     const result = await HostModel.updateOne(
+//       { _id: id },
+//       {
+//         $inc: {
+//           remainFemaleNo: -femaleNo,
+//           remainMaleNo: -maleNo
+//         }
+//       }
+
+//     );
+
+//     if (result.matchedCount === 0) {
+//       return res.status(404).json({ message: "اسکان یافت نشد" });
+//     }
+
+//     return res.status(200).json({
+//       message: "ظرفیت با موفقیت کاهش یافت",
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     next(err);
+//   }
+// };
 const decreaseGuestNo = async (req, res, next) => {
-  // await addHostSchema.validateAsync(req.body);
   const { id } = req.params;
-  // console.log(req.body)
-  // const amount = parseInt(req.body.amount, 10);
   const maleNo = parseInt(req.body.maleNo, 10);
   const femaleNo = parseInt(req.body.femaleNo, 10);
-  // console.log(maleNo, femaleNo)
+
   if (isNaN(maleNo) || isNaN(femaleNo)) {
     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
   }
 
   try {
+    // به صورت اتمیک: شرط بررسی و کاهش ظرفیت در یک مرحله
     const result = await HostModel.updateOne(
-      { _id: id },
+      {
+        _id: id,
+        remainMaleNo: { $gte: maleNo },
+        remainFemaleNo: { $gte: femaleNo }
+      },
       {
         $inc: {
-          maleNo: -maleNo,
-          femaleNo: -femaleNo
+          remainMaleNo: -maleNo,
+          remainFemaleNo: -femaleNo
         }
       }
-
     );
 
     if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "اسکان یافت نشد" });
+      return res.status(400).json({ message: "ظرفیت کافی وجود ندارد یا اسکان یافت نشد" });
     }
 
-    return res.status(200).json({
-      message: "ظرفیت با موفقیت کاهش یافت",
-    });
+    return res.status(200).json({ message: "ظرفیت با موفقیت کاهش یافت" });
   } catch (err) {
     console.error(err);
     next(err);
   }
 };
-
 const increaseGuestNo = async (req, res, next) => {
   const { id } = req.params;
-  // const amount = parseInt(req.body.amount, 10);
   const maleNo = parseInt(req.body.maleNo, 10);
   const femaleNo = parseInt(req.body.femaleNo, 10);
-  // console.log(maleNo, femaleNo)
   if (isNaN(maleNo) || isNaN(femaleNo)) {
     return res.status(400).json({ message: "مقدار وارد شده نامعتبر است" });
   }
+
 
   try {
     const result = await HostModel.updateOne(
       { _id: id }, {
       $inc: {
-        maleNo: maleNo,
-        femaleNo: femaleNo
+        remainFemaleNo: femaleNo,
+        remainMaleNo: maleNo
       }
     }
 

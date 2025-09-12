@@ -3,8 +3,8 @@ const createHttpError = require("http-errors");
 const JWT = require("jsonwebtoken");
 const axios = require("axios");
 const { GuestModel } = require("../../models/guest");
-const { OperatorModel } = require("../../models/user/operator");
-const { AdminModel } = require("../../models/user/admin");
+const { OperatorModel } = require("../../models/operator");
+const { AdminModel } = require("../../models/admin");
 async function isAuthWithCookie(req, res, next) {
   try {
     const userToken = req.signedCookies["userToken"];

@@ -5,6 +5,8 @@ const HostelSchema = new mongoose.Schema({
   address: { type: String, required: true },
   maleNo: { type: Number, required: true },
   femaleNo: { type: Number, required: true },
+   remainMaleNo:{type:Number,default:0},
+     remainFemaleNo:{type:Number,default:0},
   foodStatus: { type: Boolean, default: false },
   isMedical: { type: Boolean, default: false },
   operatorId: { type: String, required: true },

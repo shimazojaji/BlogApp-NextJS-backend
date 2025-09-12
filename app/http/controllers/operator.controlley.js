@@ -1,7 +1,7 @@
 const createHttpError = require("http-errors");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const mongoose = require("mongoose");
-const { OperatorModel } = require("../../models/user/operator");
+const { OperatorModel } = require("../../models/operator");
 const { validateFullOperatorSchema } = require("../validators/operator/operator.schema");
 
 
@@ -25,7 +25,7 @@ const getOperators = async (req, res, next) => {
 // Add a new operator
 const addOperator = async (req, res, next) => {
   try {
-        await validateFullOperatorSchema(req.body)
+    await validateFullOperatorSchema(req.body)
 
 
     const { code } = req.body;
@@ -169,5 +169,5 @@ const hostelChange = async (req, res, next) => {
 module.exports = {
   getOperators,
   addOperator,
-  removeOperator, updateOprator,getOperatorById,hostelChange
+  removeOperator, updateOprator, getOperatorById, hostelChange
 };

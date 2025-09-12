@@ -11,7 +11,7 @@ async function validateFullOperatorSchema(data) {
       .required()
       .error(createHttpError.BadRequest("کد ملی باید با فرمت صحیح وارد شود")),
 
-    role: Joi.string().valid("bahar", "lalejin", "telOpt", "eskan", "service", "nazer", "tadarok", "private").required()
+    role: Joi.string().valid("bahar", "lalejin", "telOpt", "eskan", "service", "nezarat", "tadarok", "private").required()
       .error(createHttpError.BadRequest("نقش کاربر نامعتبر است")),
     name: Joi.string().min(5).max(100).required()
       .error(createHttpError.BadRequest("نام و نام خانوادگی را به درستی وارد کنید")),

@@ -19,9 +19,9 @@ const { ServerToguestModel } = require("../../models/serverToguest");
 const CODE_EXPIRES = 90 * 1000; //90 seconds in miliseconds
 const Kavenegar = require("kavenegar");
 const { GuestModel } = require("../../models/guest");
-const { OperatorModel } = require("../../models/user/operator");
+const { OperatorModel } = require("../../models/operator");
 const { validateAdminLoginSchema } = require("../validators/user/admin.schema");
-const { AdminModel } = require("../../models/user/admin");
+const { AdminModel } = require("../../models/admin");
 const { validateperatorLoginSchema, validatePartialOperatorSchema } = require("../validators/operator/operator.schema");
 
 class UserAuthController extends Controller {
