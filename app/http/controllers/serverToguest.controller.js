@@ -35,7 +35,7 @@ const addNewServer = async (req, res, next) => {
     if (exists) throw createHttpError.Conflict("شماره موبایل قبلاً ثبت شده است");
 
     const servers = await ServerToguestModel.create(req.body);
-
+data
     res.status(HttpStatus.CREATED).json({
       statusCode: HttpStatus.CREATED,
       message: "اطلاعات میزبان با موفقیت ثبت شد",

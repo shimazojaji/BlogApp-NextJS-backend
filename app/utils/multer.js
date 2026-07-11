@@ -19,6 +19,7 @@ function createRoute(req, fieldName) {
     day
   );
   req.body.fileUploadPath = path.join("uploads", fieldName, year, month, day);
+  
   fs.mkdirSync(directory, { recursive: true });
   return directory;
 }

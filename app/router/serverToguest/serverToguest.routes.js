@@ -8,34 +8,18 @@ const expressAsyncHandler = require("express-async-handler");
 const { getListOfServers, getServerById, updateServer, removeServer, sendMessage } = require("../../http/controllers/serverToguest.controller");
 const { verifyAccessToken, decideAuthMiddleware } = require("../../http/middlewares/auth.middleware");
 const { StatusCodes: HttpStatus } = require("http-status-codes");
+const { uploadFile } = require("../../utils/multer");
+const { addNewServerToGuest } = require("../../http/controllers/server.controller");
 
 
 // POST /server/add 
-router.post("/add", async (req, res, next) => {
-    try {
-        await addServerSchema.validateAsync(req.body);
-        const { mobile, namefamily } = req.body;
+router.post(
+    "/add",
+    uploadFile.single("photo"),
 
-        const exists = await ServerToguestModel.findOne({ mobile: req.body.mobile });
-        if (exists) throw createHttpError.Conflict("شماره موبایل قبلا ثبت شده است");
+    expressAsyncHandler(addNewServerToGuest)
+);
 
-        const server = await ServerToguestModel.create(req.body);
-        await sendMessage(mobile, namefamily)
-        res.status(HttpStatus.CREATED).json({
-            statusCode: HttpStatus.CREATED,
-            message: "ثبت اطلاعات با موفقیت انجام شد",
-            data: server,
-        });
-        
-        /*  res.status(201).json({
-             message: "ثبت اطلاعات با موفقیت انجام شد",
-             data: server,
-             
-         }); */
-    } catch (err) {
-        next(err);
-    }
-});
 router.get("/list", verifyAccessToken, expressAsyncHandler(getListOfServers))
 
 router.get("/:id", decideAuthMiddleware, expressAsyncHandler(getServerById));

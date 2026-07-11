@@ -28,7 +28,7 @@ const getListOfGuests = async (req, res, next) => {
 
 // Add a new guest
 const addNewGuest = async (req, res, next) => {
-  console.log(req.body)
+  // console.log(req.body)
   try {
     await addGuestSchema.validateAsync(req.body);
 
@@ -165,6 +165,7 @@ const updateGuest = async (req, res, next) => {
     next(err);
   }
 };
+
 //UodateForTel
 const updateGuestTel = async (req, res, next) => {
 
