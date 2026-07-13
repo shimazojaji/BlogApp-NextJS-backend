@@ -9,6 +9,7 @@ const ServerToguestSchema = new mongoose.Schema({
     birthDate: { type: String, default: new Date() },
     status: { type: String, default: "pending" },
     category:[{ type: String }],
+    subCategory:[{ type: String ,default:"unknown"}],
     userRole: { type: String, default: "USER" }
 
 

@@ -13,7 +13,18 @@ const addNewServerToGuest = async (req, res, next) => {
     try {
         // await addServerSchema.validateAsync(req.body);
         const { filename, fileUploadPath, ...rest } = req.body;
-        console.log(rest)
+        // console.log(rest)
+        /* if (req.body.category && !Array.isArray(req.body.category)) {
+            req.body.category = [req.body.category];
+        } */
+        if (rest.category) {
+            rest.category = JSON.parse(rest.category);
+        }
+
+        /*  console.log(rest.category);
+         console.log(typeof rest.category);
+         console.log(Array.isArray(rest.category)); */
+
         let photo = "";
         await addServerSchema.validateAsync(rest);
         const {
@@ -23,7 +34,7 @@ const addNewServerToGuest = async (req, res, next) => {
             gender,
             category, serverHistory,
             birthDate,
-
+            status, subCategory
         } = rest;
         await addServerSchema.validateAsync(rest);
 
@@ -39,6 +50,7 @@ const addNewServerToGuest = async (req, res, next) => {
         }
 
 
+
         /*   const fileAddress = path.join(fileUploadPath, filename);
           const photo = fileAddress.replace(/\\/g, "/"); */
         const server = await ServerToguestModel.create({
@@ -49,6 +61,8 @@ const addNewServerToGuest = async (req, res, next) => {
             serverHistory,
             birthDate,
             category,
+            status,
+            subCategory,
             photo,
         });
 

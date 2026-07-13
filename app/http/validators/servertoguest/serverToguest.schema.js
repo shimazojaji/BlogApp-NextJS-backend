@@ -23,7 +23,9 @@ const addServerSchema = Joi.object({
     .error(createHttpError.BadRequest("    سابقه خدمت  را   مشخص کنید")),
   birthDate: Joi.date().iso().required()
     .error(createHttpError.BadRequest("تاریخ را به درستی وارد کنید")),
-    category:Joi.array().items(Joi.string()).required()
+  category: Joi.array().items(Joi.string()).required(),
+   subCategory: Joi.array().items(Joi.string()).optional(),
+  status: Joi.string().valid("pending", "accepted", "deny").optional(),
 
 })
 
